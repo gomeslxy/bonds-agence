@@ -1,0 +1,36 @@
+BONDS AGENCE V3.5 - MAPA DE ATUALIZAÇÃO (SUPABASE MIGRATION)
+
+1. CONFIGURAÇÃO DO BANCO DE DADOS:
+   - Arquivo: /supabase_setup.sql
+   - Ação: Copie o conteúdo deste arquivo e execute no SQL Editor do Supabase.
+
+2. VARIÁVEIS DE AMBIENTE:
+   - Arquivo: /.env.local
+   - Ação: Insira sua NEXT_PUBLIC_SUPABASE_URL e NEXT_PUBLIC_SUPABASE_ANON_KEY.
+
+3. INFRAESTRUTURA:
+   - /lib/supabase.ts (NOVO): Cliente de conexão.
+   - /lib/utils.ts (NOVO): Máscaras (CPF/CEP) e Validação Matemática de CPF.
+
+4. ESTADO GLOBAL (ZUSTAND):
+   - /store/useAdmin.ts (REFATORADO): Integração completa com Supabase e Realtime Sync.
+
+5. INTERFACE HOME:
+   - /components/ProductGrid.tsx (ATUALIZADO): Agora consome produtos do Supabase em tempo real.
+
+6. CHECKOUT BLINDADO:
+   - /app/cart/page.tsx (REFATORADO): 
+     - Máscaras dinâmicas de CPF/CEP.
+     - Validação matemática de CPF (bloqueia o botão "Finalizar").
+     - Novos campos: Endereço completo (Bairro, Número, Complemento).
+     - Persistência direta na tabela 'orders' do Supabase.
+
+7. PAINEL ADMIN:
+   - /app/admin/components/OrdersTable.tsx (ATUALIZADO):
+     - Listagem de todos os campos capturados.
+     - Detalhes expandidos com endereço completo e CPF.
+     - Sincronização de status com o banco.
+
+---
+IMPORTANTE: Execute 'npm install @supabase/supabase-js' se ainda não o fez.
+A estética Sportlife VFX foi preservada e aprimorada com feedback visual de validação.

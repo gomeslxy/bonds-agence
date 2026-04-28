@@ -1,0 +1,278 @@
+'use client';
+
+import { useEffect, useState, Suspense } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
+import { Home, Package, Zap, CheckCircle } from 'lucide-react';
+
+/* ── Ember particle ─────────────────────────────────────── */
+function Ember({ i }: { i: number }) {
+  const [props, setProps] = useState<any>(null);
+
+  useEffect(() => {
+    const angle  = (i / 30) * Math.PI * 2 + (Math.random() - 0.5) * 1.2;
+    const dist   = 120 + Math.random() * 200;
+    const size   = 3 + Math.random() * 6;
+    const colors = ['#FF0000', '#FF2200', '#FF4500', '#FF6600', '#FFA500', '#FFD700'];
+    const color  = colors[Math.floor(Math.random() * colors.length)];
+    const dur    = 1.2 + Math.random() * 1.8;
+    const delay  = Math.random() * 0.6;
+    setProps({ angle, dist, size, color, dur, delay });
+  }, [i]);
+
+  if (!props) return null;
+
+  const { angle, dist, size, color, dur, delay } = props;
+
+  return (
+    <motion.div
+      className="absolute rounded-full pointer-events-none"
+      style={{
+        width: size, height: size,
+        background: color,
+        top: '50%', left: '50%',
+        marginTop: -size / 2, marginLeft: -size / 2,
+        boxShadow: `0 0 ${size * 3}px ${color}`,
+      }}
+      initial={{ opacity: 1, x: 0, y: 0, scale: 1 }}
+      animate={{
+        opacity: [1, 1, 0],
+        x: Math.cos(angle) * dist,
+        y: Math.sin(angle) * dist - 80,
+        scale: [1, 0.8, 0],
+      }}
+      transition={{ duration: dur, delay, ease: [0.2, 0, 0.8, 1] }}
+    />
+  );
+}
+
+/* ── Floating ember (continuous) ────────────────────────── */
+function FloatingEmber({ delay, x }: { delay: number; x: string }) {
+  const [props, setProps] = useState<any>(null);
+
+  useEffect(() => {
+    const color = ['#FF0000', '#FF4500', '#FFA500'][Math.floor(Math.random() * 3)];
+    const dur = 3 + Math.random() * 3;
+    setProps({ color, dur });
+  }, []);
+
+  if (!props) return null;
+
+  return (
+    <motion.div
+      className="absolute bottom-0 rounded-full pointer-events-none"
+      style={{ left: x, width: 4, height: 4, background: props.color, boxShadow: `0 0 8px ${props.color}` }}
+      animate={{ y: [0, -typeof window !== 'undefined' ? window.innerHeight : 1000], opacity: [0, 1, 0] }}
+      transition={{ duration: props.dur, delay, repeat: Infinity, ease: 'easeOut' }}
+    />
+  );
+}
+
+/* ── Confetti ring ──────────────────────────────────────── */
+function RingBurst() {
+  return (
+    <motion.div
+      className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full pointer-events-none"
+      initial={{ scale: 0, opacity: 0.8, width: 0, height: 0 }}
+      animate={{ scale: 1, opacity: 0, width: 400, height: 400, marginLeft: -200, marginTop: -200 }}
+      transition={{ duration: 1.2, ease: [0, 0, 0.2, 1] }}
+      style={{ border: '2px solid #FF4500', position: 'absolute' }}
+    />
+  );
+}
+
+function SuccessContent() {
+  const searchParams = useSearchParams();
+  const orderId = searchParams.get('id') ?? `ORD-${Math.floor(Math.random() * 9000) + 1000}`;
+
+  const [burst, setBurst] = useState(false);
+  const [showDetails, setShowDetails] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+    const t1 = setTimeout(() => setBurst(true), 300);
+    const t2 = setTimeout(() => setShowDetails(true), 1200);
+    return () => { clearTimeout(t1); clearTimeout(t2); };
+  }, []);
+
+  return (
+    <div className="min-h-screen bg-black flex flex-col items-center justify-center px-4 relative overflow-hidden">
+
+      {/* Ambient glow */}
+      <motion.div
+        className="fixed inset-0 pointer-events-none"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 1.5 }}
+        style={{ background: 'radial-gradient(ellipse at center, rgba(255,34,0,0.12) 0%, transparent 60%)' }}
+      />
+
+      {/* Continuous floating embers */}
+      {mounted && [...Array(15)].map((_, i) => (
+        <FloatingEmber key={i} delay={i * 0.3} x={`${5 + i * 6}%`} />
+      ))}
+
+      {/* Center burst */}
+      <div className="relative">
+        {/* Ember explosion */}
+        {burst && [...Array(30)].map((_, i) => <Ember key={i} i={i} />)}
+
+        {/* Ring bursts */}
+        {burst && [0, 0.2, 0.4].map((d, i) => (
+          <motion.div key={i} initial={false} transition={{ delay: d }}>
+            <RingBurst />
+          </motion.div>
+        ))}
+
+        {/* Central icon */}
+        <motion.div
+          initial={{ scale: 0, rotate: -20 }}
+          animate={{ scale: 1, rotate: 0 }}
+          transition={{ type: 'spring', damping: 12, stiffness: 200, delay: 0.2 }}
+          className="relative w-28 h-28 flex items-center justify-center mb-8"
+          style={{ background: 'linear-gradient(135deg,#FF0000,#FF4500,#FFA500)', borderRadius: '16px',
+                   boxShadow: '0 0 60px rgba(255,34,0,0.5), 0 0 120px rgba(255,69,0,0.3)' }}
+        >
+          <motion.span
+            animate={{ scale: [1, 1.1, 1] }}
+            transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+            className="text-5xl select-none"
+          >
+            🔥
+          </motion.span>
+
+          {/* Pulse ring */}
+          <motion.div
+            className="absolute inset-0 rounded-2xl"
+            animate={{ scale: [1, 1.3, 1], opacity: [0.5, 0, 0.5] }}
+            transition={{ duration: 2, repeat: Infinity }}
+            style={{ border: '2px solid #FF4500' }}
+          />
+        </motion.div>
+      </div>
+
+      {/* Text content */}
+      <AnimatePresence>
+        {showDetails && (
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ type: 'spring', damping: 20, stiffness: 180 }}
+            className="text-center space-y-4 max-w-lg"
+          >
+            {/* Order ID */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.1 }}
+              className="inline-flex items-center gap-2 px-4 py-2 mb-4"
+              style={{ background: 'rgba(255,69,0,0.08)', border: '1px solid rgba(255,69,0,0.2)', borderRadius: '2px' }}
+            >
+              <Zap size={11} fill="#FF4500" stroke="none" />
+              <span className="text-[11px] tracking-widest"
+                    style={{ fontFamily: "'Space Mono', monospace", color: '#FF4500' }}>
+                {orderId}
+              </span>
+            </motion.div>
+
+            <motion.h1
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.15 }}
+              style={{
+                fontFamily: "'Bebas Neue', Impact, sans-serif",
+                fontSize: 'clamp(3rem, 12vw, 6rem)',
+                letterSpacing: '0.04em',
+                lineHeight: 1,
+                background: 'linear-gradient(135deg,#FF0000,#FF4500,#FFA500)',
+                WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text',
+                filter: 'drop-shadow(0 0 30px rgba(255,34,0,0.4))',
+              }}
+            >
+              PEDIDO CONFIRMADO!
+            </motion.h1>
+
+            <motion.p
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.25 }}
+              className="text-white/40 leading-relaxed"
+              style={{ fontFamily: "'Barlow', system-ui, sans-serif", fontWeight: 300, fontSize: '1rem' }}
+            >
+              Seu kit está sendo separado pelos nossos operadores de fogo.
+              <br />
+              Em instantes você recebe a confirmação no e-mail.
+            </motion.p>
+
+            {/* Steps */}
+            <motion.div
+              initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }}
+              className="grid grid-cols-3 gap-3 mt-6"
+            >
+              {[
+                { icon: <CheckCircle size={20} />, label: 'Pedido Recebido',   sub: 'Agora' },
+                { icon: '🏭', label: 'Separando Kit',     sub: '1–2 dias' },
+                { icon: '🚀', label: 'A Caminho',         sub: 'Em breve' },
+              ].map((step, i) => (
+                <motion.div
+                  key={step.label}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.4 + i * 0.1 }}
+                  className="p-3 text-center"
+                  style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '3px' }}
+                >
+                  <div className="text-xl mb-1">{step.icon}</div>
+                  <p className="text-[11px] text-white/60 leading-tight"
+                     style={{ fontFamily: "'Barlow Condensed', system-ui, sans-serif", fontWeight: 600 }}>
+                    {step.label}
+                  </p>
+                  <p className="text-[9px] text-white/20 mt-0.5" style={{ fontFamily: "'Space Mono', monospace" }}>
+                    {step.sub}
+                  </p>
+                </motion.div>
+              ))}
+            </motion.div>
+
+            {/* CTA buttons */}
+            <motion.div
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.6 }}
+              className="flex flex-col sm:flex-row gap-3 justify-center pt-4"
+            >
+              <Link href="/">
+                <motion.span
+                  whileHover={{ scale: 1.03, y: -1 }} whileTap={{ scale: 0.97 }}
+                  className="inline-flex items-center gap-2 px-7 py-3.5 font-bold uppercase tracking-widest text-black cursor-pointer"
+                  style={{ background: 'linear-gradient(135deg,#FF0000,#FF4500,#FFA500)', borderRadius: '2px',
+                           fontFamily: "'Barlow Condensed', system-ui, sans-serif", fontWeight: 700, letterSpacing: '0.18em' }}
+                >
+                  <Home size={14} />
+                  Voltar para Home
+                </motion.span>
+              </Link>
+              <Link href="/#produtos">
+                <motion.span
+                  whileHover={{ scale: 1.03, y: -1 }} whileTap={{ scale: 0.97 }}
+                  className="inline-flex items-center gap-2 px-7 py-3.5 text-white/40 hover:text-white transition-all cursor-pointer"
+                  style={{ border: '1px solid rgba(255,255,255,0.1)', borderRadius: '2px',
+                           fontFamily: "'Barlow Condensed', system-ui, sans-serif", fontWeight: 600, letterSpacing: '0.18em', fontSize: '0.9rem' }}
+                >
+                  <Package size={14} />
+                  Continuar Comprando
+                </motion.span>
+              </Link>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+export default function SuccessPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-black flex items-center justify-center text-white/20">Carregando...</div>}>
+      <SuccessContent />
+    </Suspense>
+  );
+}
