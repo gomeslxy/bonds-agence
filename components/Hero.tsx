@@ -7,6 +7,22 @@ import { siteConfig } from '@/config/siteConfig';
 
 const STATS = siteConfig.stats;
 
+// Pre-computed static ember data – avoids Math.random() during render (hydration mismatch)
+const EMBERS = [
+  { w: 4.2, h: 3.8, l: 8,  t: 15, shadow: 8,  dur: 5.2, delay: 0.3 },
+  { w: 2.5, h: 5.1, l: 19, t: 72, shadow: 12, dur: 4.8, delay: 1.7 },
+  { w: 5.8, h: 2.9, l: 33, t: 44, shadow: 6,  dur: 6.1, delay: 0.9 },
+  { w: 3.1, h: 4.4, l: 47, t: 88, shadow: 10, dur: 3.9, delay: 2.4 },
+  { w: 4.6, h: 3.2, l: 55, t: 31, shadow: 14, dur: 5.5, delay: 0.6 },
+  { w: 2.8, h: 5.5, l: 64, t: 60, shadow: 7,  dur: 4.2, delay: 3.1 },
+  { w: 5.2, h: 2.6, l: 72, t: 18, shadow: 11, dur: 6.8, delay: 1.2 },
+  { w: 3.7, h: 4.9, l: 81, t: 79, shadow: 9,  dur: 3.6, delay: 0.4 },
+  { w: 4.1, h: 3.5, l: 89, t: 50, shadow: 13, dur: 5.9, delay: 2.8 },
+  { w: 2.3, h: 5.8, l: 15, t: 93, shadow: 5,  dur: 4.5, delay: 1.5 },
+  { w: 5.6, h: 3.0, l: 40, t: 7,  shadow: 15, dur: 7.0, delay: 0.1 },
+  { w: 3.4, h: 4.2, l: 96, t: 38, shadow: 8,  dur: 4.0, delay: 3.9 },
+];
+
 export default function Hero() {
   const containerRef = useRef<HTMLElement>(null);
   const { scrollYProgress } = useScroll({
@@ -69,17 +85,17 @@ export default function Hero() {
       />
 
       {/* Floating ember particles */}
-      {[...Array(12)].map((_, i) => (
+      {EMBERS.map((e, i) => (
         <motion.div
           key={i}
           className="absolute rounded-full pointer-events-none"
           style={{
-            width: Math.random() * 4 + 2,
-            height: Math.random() * 4 + 2,
-            left: `${Math.random() * 100}%`,
-            top: `${Math.random() * 100}%`,
+            width: e.w,
+            height: e.h,
+            left: `${e.l}%`,
+            top: `${e.t}%`,
             background: i % 3 === 0 ? '#FF0000' : i % 3 === 1 ? '#FF4500' : '#FFA500',
-            boxShadow: `0 0 ${Math.random() * 10 + 4}px currentColor`,
+            boxShadow: `0 0 ${e.shadow}px currentColor`,
           }}
           animate={{
             y: [0, -120 - (i % 5) * 20],
@@ -88,9 +104,9 @@ export default function Hero() {
             scale: [0, 1, 0],
           }}
           transition={{
-            duration: 3 + Math.random() * 4,
+            duration: e.dur,
             repeat: Infinity,
-            delay: Math.random() * 5,
+            delay: e.delay,
             ease: 'easeOut',
           }}
         />

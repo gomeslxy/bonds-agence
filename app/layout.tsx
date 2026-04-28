@@ -3,7 +3,7 @@ import './globals.css';
 import ToastVFXProvider from '@/components/ToastVFX';
 
 export const metadata: Metadata = {
-  metadataBase: new URL('http://localhost:3000'),
+  metadataBase: new URL('https://bonds-agence.vercel.app'),
   title: 'BONDS AGENCE – Sportlife & Streetwear Premium',
   description:
     'Vista-se como um mito. Conjuntos, corta-ventos, kits refletivos e acessórios de luxo urbano.',
