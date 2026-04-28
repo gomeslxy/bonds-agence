@@ -17,14 +17,36 @@ const fmt = (n: number) => n.toLocaleString('pt-BR', { style: 'currency', curren
 /* ── Auth Gate ──────────────────────────────────────────── */
 function AuthGate() {
   const { login } = useAdmin();
-  const [pw, setPw]       = useState('');
-  const [error, setError] = useState(false);
+  const [pw, setPw]         = useState('');
+  const [error, setError]   = useState<'wrong' | 'blocked' | null>(null);
   const [focused, setFocused] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [cooldown, setCooldown] = useState(0);
+
+  // Countdown timer when rate-limited
+  useEffect(() => {
+    if (cooldown <= 0) return;
+    const t = setTimeout(() => setCooldown((c) => c - 1), 1000);
+    return () => clearTimeout(t);
+  }, [cooldown]);
 
   const handleLogin = async () => {
-    const ok = await login(pw);
-    if (!ok) { setError(true); setTimeout(() => setError(false), 1500); }
+    if (loading || cooldown > 0) return;
+    setLoading(true);
+    setError(null);
+    const result = await login(pw);
+    setLoading(false);
+    if (result === true) return;
+    if (result === 'blocked') {
+      setError('blocked');
+      setCooldown(60);
+    } else {
+      setError('wrong');
+      setTimeout(() => setError(null), 1800);
+    }
   };
+
+  const isBlocked = error === 'blocked' || cooldown > 0;
 
   return (
     <div className="min-h-screen bg-black flex items-center justify-center px-4">
@@ -54,42 +76,65 @@ function AuthGate() {
           <div className="relative">
             <input
               type="password" value={pw} placeholder="Senha de acesso"
+              disabled={isBlocked || loading}
               onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
               onChange={(e) => setPw(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
-              className="w-full px-4 py-3 text-white placeholder-white/20 outline-none text-center"
+              className="w-full px-4 py-3 text-white placeholder-white/20 outline-none text-center disabled:opacity-40"
               style={{
-                background: error ? 'rgba(255,0,0,0.06)' : focused ? 'rgba(255,69,0,0.04)' : 'rgba(255,255,255,0.02)',
-                border: `1px solid ${error ? '#FF0000' : focused ? '#FF4500' : 'rgba(255,255,255,0.08)'}`,
+                background: error === 'wrong' ? 'rgba(255,0,0,0.06)' : isBlocked ? 'rgba(255,165,0,0.04)' : focused ? 'rgba(255,69,0,0.04)' : 'rgba(255,255,255,0.02)',
+                border: `1px solid ${error === 'wrong' ? '#FF0000' : isBlocked ? 'rgba(255,165,0,0.4)' : focused ? '#FF4500' : 'rgba(255,255,255,0.08)'}`,
                 borderRadius: '2px',
                 fontFamily: "'Space Mono', monospace",
-                boxShadow: error ? '0 0 20px rgba(255,0,0,0.2)' : focused ? '0 0 12px rgba(255,69,0,0.15)' : 'none',
+                boxShadow: error === 'wrong' ? '0 0 20px rgba(255,0,0,0.2)' : isBlocked ? '0 0 20px rgba(255,165,0,0.15)' : focused ? '0 0 12px rgba(255,69,0,0.15)' : 'none',
                 transition: 'all 0.2s ease',
                 letterSpacing: '0.2em',
               }}
             />
-            {focused && (
+            {focused && !isBlocked && (
               <motion.div initial={{ scaleX: 0 }} animate={{ scaleX: 1 }}
                           className="absolute bottom-0 left-0 right-0 h-px origin-left"
                           style={{ background: 'linear-gradient(90deg,#FF0000,#FF4500,#FFA500)' }} />
             )}
           </div>
 
+          {/* Rate limit warning banner */}
+          <AnimatePresence>
+            {isBlocked && (
+              <motion.div
+                initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }}
+                className="flex items-center justify-center gap-2 px-4 py-2.5 text-[11px]"
+                style={{ background: 'rgba(255,165,0,0.08)', border: '1px solid rgba(255,165,0,0.25)', borderRadius: '2px',
+                         fontFamily: "'Space Mono', monospace", color: '#FFA500' }}
+              >
+                <Lock size={10} />
+                Bloqueado por tentativas excessivas{cooldown > 0 ? ` · ${cooldown}s` : ''}
+              </motion.div>
+            )}
+          </AnimatePresence>
+
           <motion.button
-            onClick={handleLogin} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
-            animate={error ? { x: [-6, 6, -6, 6, 0] } : {}}
-            transition={error ? { duration: 0.3 } : {}}
-            className="w-full py-3.5 flex items-center justify-center gap-2 font-bold uppercase tracking-widest text-black"
-            style={{ background: 'linear-gradient(135deg,#FF0000,#FF4500,#FFA500)', borderRadius: '2px',
-                     fontFamily: "'Barlow Condensed', system-ui, sans-serif", fontWeight: 700, letterSpacing: '0.2em' }}
+            onClick={handleLogin}
+            disabled={isBlocked || loading}
+            whileHover={!isBlocked && !loading ? { scale: 1.02 } : {}}
+            whileTap={!isBlocked && !loading ? { scale: 0.98 } : {}}
+            animate={error === 'wrong' ? { x: [-6, 6, -6, 6, 0] } : {}}
+            transition={error === 'wrong' ? { duration: 0.3 } : {}}
+            className="w-full py-3.5 flex items-center justify-center gap-2 font-bold uppercase tracking-widest text-black disabled:opacity-50 disabled:cursor-not-allowed"
+            style={{
+              background: isBlocked ? 'rgba(255,165,0,0.3)' : 'linear-gradient(135deg,#FF0000,#FF4500,#FFA500)',
+              borderRadius: '2px',
+              fontFamily: "'Barlow Condensed', system-ui, sans-serif", fontWeight: 700, letterSpacing: '0.2em',
+              color: isBlocked ? '#FFA500' : 'black',
+            }}
           >
             <Lock size={14} />
-            {error ? 'Senha Incorreta' : 'Entrar'}
+            {loading ? 'Verificando...' : isBlocked ? `Aguarde ${cooldown}s` : error === 'wrong' ? 'Senha Incorreta' : 'Entrar'}
           </motion.button>
         </div>
 
         <p className="text-[10px] text-white/15" style={{ fontFamily: "'Space Mono', monospace" }}>
-          Senha padrão: bonds2025 · altere em config/siteConfig.ts
+          Acesso restrito · BONDS AGENCE
         </p>
       </motion.div>
     </div>

@@ -25,7 +25,7 @@ interface AdminStore {
   setEditing:   (p: Product | null) => void;
   isAuthenticated: boolean;
   isLoading:       boolean;
-  login:        (pw: string) => Promise<boolean>;
+  login:        (pw: string) => Promise<boolean | 'blocked'>;
   logout:       () => void;
   refreshData:  () => Promise<void>;
   resetToDefault: () => Promise<void>;
@@ -179,16 +179,16 @@ export const useAdmin = create<AdminStore>((set, get) => ({
       
       const data = await res.json();
       
+      if (res.status === 429) return 'blocked';
+
       if (data.success) {
         set({ isAuthenticated: true });
         localStorage.setItem('bonds_admin_auth', 'true');
         return true;
       }
       
-      if (data.error) alert(data.error);
       return false;
     } catch (error) {
-      alert('Erro ao conectar com o servidor de segurança.');
       return false;
     }
   },
