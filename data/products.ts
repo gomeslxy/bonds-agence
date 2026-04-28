@@ -14,6 +14,7 @@ export interface Product {
   description: string;
   features: string[];
   stock: number;
+  created_at?: string;
 }
 
 export const categories = [

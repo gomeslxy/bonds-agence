@@ -25,7 +25,7 @@ interface AdminStore {
   setEditing:   (p: Product | null) => void;
   isAuthenticated: boolean;
   isLoading:       boolean;
-  login:        (pw: string) => boolean;
+  login:        (pw: string) => Promise<boolean>;
   logout:       () => void;
   refreshData:  () => Promise<void>;
   resetToDefault: () => Promise<void>;

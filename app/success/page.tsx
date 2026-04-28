@@ -63,7 +63,7 @@ function FloatingEmber({ delay, x }: { delay: number; x: string }) {
     <motion.div
       className="absolute bottom-0 rounded-full pointer-events-none"
       style={{ left: x, width: 4, height: 4, background: props.color, boxShadow: `0 0 8px ${props.color}` }}
-      animate={{ y: [0, -typeof window !== 'undefined' ? window.innerHeight : 1000], opacity: [0, 1, 0] }}
+      animate={{ y: [0, typeof window !== 'undefined' ? -window.innerHeight : -1000], opacity: [0, 1, 0] }}
       transition={{ duration: props.dur, delay, repeat: Infinity, ease: 'easeOut' }}
     />
   );
