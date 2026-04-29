@@ -95,7 +95,7 @@ function OrderRow({ order }: { order: Order }) {
         </td>
         <td className="px-4 py-3">
           <motion.div animate={{ rotate: expanded ? 180 : 0 }} transition={{ duration: 0.2 }}>
-            <ChevronDown size={14} className="text-white/30" />
+            <ChevronDown size={14} className="text-black/30 dark:text-white/30" />
           </motion.div>
         </td>
       </motion.tr>

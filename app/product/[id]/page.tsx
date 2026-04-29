@@ -189,7 +189,7 @@ export default function ProductPage({ params }: { params: { id: string } }) {
         {/* Back nav */}
         <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.4 }}>
           <Link
-            href="/#produtos"
+            href="/produtos"
             className="inline-flex items-center gap-2 text-black/50 dark:text-white/30 hover:text-black dark:hover:text-white transition-colors mb-10 group font-mono text-[0.7rem] tracking-[0.2em]"
           >
             <ArrowLeft size={12} className="group-hover:-translate-x-1 transition-transform" />

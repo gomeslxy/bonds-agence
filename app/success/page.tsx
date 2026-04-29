@@ -239,7 +239,7 @@ function SuccessContent() {
                   Voltar para Home
                 </motion.span>
               </Link>
-              <Link href="/#produtos">
+              <Link href="/produtos">
                 <motion.span
                   whileHover={{ scale: 1.03, y: -1 }} whileTap={{ scale: 0.97 }}
                   className="inline-flex items-center gap-2 px-7 py-3.5 text-black/50 dark:text-white/40 hover:text-black dark:hover:text-white transition-all cursor-pointer border border-black/10 dark:border-white/10 font-body font-semibold tracking-[0.18em] text-[0.9rem] rounded-sm"

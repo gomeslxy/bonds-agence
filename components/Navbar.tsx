@@ -8,8 +8,8 @@ import ClientOnly from '@/components/ClientOnly';
 import { ThemeToggle } from '@/components/ThemeToggle';
 
 const navLinks = [
-  { label: 'Drops', href: '#produtos' },
-  { label: 'Kits', href: '#produtos' },
+  { label: 'Drops', href: '/produtos' },
+  { label: 'Kits', href: '/produtos' },
   { label: 'Collab', href: '#' },
   { label: 'About', href: '#' },
 ];

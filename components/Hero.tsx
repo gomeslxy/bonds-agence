@@ -214,17 +214,17 @@ export default function Hero() {
           className="flex flex-wrap items-center justify-center gap-4 mb-16"
         >
           <motion.a
-            href="#produtos"
+            href="/produtos"
             whileHover={{ scale: 1.03, y: -2 }}
             whileTap={{ scale: 0.97 }}
             className="btn-fire inline-flex items-center gap-3 px-8 py-4 font-body font-extrabold tracking-[0.15em] uppercase text-[0.9rem] rounded-sm text-white"
           >
-            <span>Ver os Kits</span>
+            <span>Ver Produtos</span>
             <ArrowRight size={16} className="relative z-10" />
           </motion.a>
 
           <motion.a
-            href="#produtos"
+            href="/produtos"
             whileHover={{ scale: 1.03, y: -2 }}
             whileTap={{ scale: 0.97 }}
             className="btn-outline-fire inline-flex items-center gap-3 px-8 py-4 font-body font-bold tracking-[0.15em] text-[0.9rem] rounded-sm"

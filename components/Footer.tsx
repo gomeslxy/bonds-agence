@@ -2,8 +2,8 @@ import { Zap, Instagram } from 'lucide-react';
 
 const links = {
   Loja: ['Corta-Ventos', 'Conjuntos', 'Kits Refletivos', 'Regatas', 'Acessórios'],
-  Suporte: ['Tamanhos', 'Trocas & Devoluções', 'Rastrear Pedido', 'FAQ'],
-  Empresa: ['Nossa História', 'Collab', 'Imprensa', 'Trabalhe Conosco'],
+  Suporte: ['Meus Pedidos', 'Tamanhos', 'Trocas & Devoluções', 'FAQ'],
+  Empresa: ['Nossa História', 'Collab', 'Trabalhe Conosco'],
 };
 
 export default function Footer() {
@@ -63,16 +63,20 @@ export default function Footer() {
                 {title}
               </h4>
               <ul className="space-y-2.5">
-                {items.map((item) => (
-                  <li key={item}>
-                    <a
-                      href="#"
-                      className="text-sm font-body text-black/50 dark:text-white/30 hover:text-black dark:hover:text-white transition-colors duration-200"
-                    >
-                      {item}
-                    </a>
-                  </li>
-                ))}
+                {items.map((item) => {
+                  const href = item === 'Meus Pedidos' ? '/orders' : 
+                               item === 'Corta-Ventos' || item === 'Conjuntos' || item === 'Kits Refletivos' || item === 'Regatas' || item === 'Acessórios' ? '/produtos' : '#';
+                  return (
+                    <li key={item}>
+                      <a
+                        href={href}
+                        className="text-sm font-body text-black/50 dark:text-white/30 hover:text-black dark:hover:text-white transition-colors duration-200"
+                      >
+                        {item}
+                      </a>
+                    </li>
+                  );
+                })}
               </ul>
             </div>
           ))}

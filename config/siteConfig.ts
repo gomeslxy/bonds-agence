@@ -51,8 +51,8 @@ export const siteConfig = {
   ],
 
   navLinks: [
-    { label: 'Drops',  href: '/#produtos' },
-    { label: 'Kits',   href: '/#produtos' },
+    { label: 'Drops',  href: '/produtos' },
+    { label: 'Kits',   href: '/produtos' },
     { label: 'Collab', href: '#' },
     { label: 'About',  href: '#' },
   ],
