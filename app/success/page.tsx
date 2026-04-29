@@ -99,7 +99,7 @@ function SuccessContent() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-black flex flex-col items-center justify-center px-4 relative overflow-hidden">
+    <div className="min-h-screen bg-white dark:bg-black flex flex-col items-center justify-center px-4 relative overflow-hidden">
 
       {/* Ambient glow */}
       <motion.div
@@ -171,9 +171,8 @@ function SuccessContent() {
               className="inline-flex items-center gap-2 px-4 py-2 mb-4"
               style={{ background: 'rgba(255,69,0,0.08)', border: '1px solid rgba(255,69,0,0.2)', borderRadius: '2px' }}
             >
-              <Zap size={11} fill="#FF4500" stroke="none" />
-              <span className="text-[11px] tracking-widest"
-                    style={{ fontFamily: "'Space Mono', monospace", color: '#FF4500' }}>
+              <Zap size={11} className="text-fire-orange fill-fire-orange" stroke="none" />
+              <span className="text-[11px] font-mono tracking-widest text-fire-orange">
                 {orderId}
               </span>
             </motion.div>
@@ -182,23 +181,14 @@ function SuccessContent() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.15 }}
-              style={{
-                fontFamily: "'Bebas Neue', Impact, sans-serif",
-                fontSize: 'clamp(3rem, 12vw, 6rem)',
-                letterSpacing: '0.04em',
-                lineHeight: 1,
-                background: 'linear-gradient(135deg,#FF0000,#FF4500,#FFA500)',
-                WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text',
-                filter: 'drop-shadow(0 0 30px rgba(255,34,0,0.4))',
-              }}
+              className="text-[clamp(3rem,12vw,6rem)] font-display tracking-[0.04em] leading-none bg-gradient-to-br from-[#FF0000] via-[#FF4500] to-[#FFA500] bg-clip-text text-transparent drop-shadow-[0_0_30px_rgba(255,34,0,0.4)]"
             >
               PEDIDO CONFIRMADO!
             </motion.h1>
 
             <motion.p
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.25 }}
-              className="text-white/40 leading-relaxed"
-              style={{ fontFamily: "'Barlow', system-ui, sans-serif", fontWeight: 300, fontSize: '1rem' }}
+              className="text-black/60 dark:text-white/40 leading-relaxed font-body font-light text-[1rem]"
             >
               Seu kit está sendo separado pelos nossos operadores de fogo.
               <br />
@@ -224,11 +214,10 @@ function SuccessContent() {
                   style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '3px' }}
                 >
                   <div className="text-xl mb-1">{step.icon}</div>
-                  <p className="text-[11px] text-white/60 leading-tight"
-                     style={{ fontFamily: "'Barlow Condensed', system-ui, sans-serif", fontWeight: 600 }}>
+                  <p className="text-[11px] font-body text-black/70 dark:text-white/60 leading-tight font-semibold">
                     {step.label}
                   </p>
-                  <p className="text-[9px] text-white/20 mt-0.5" style={{ fontFamily: "'Space Mono', monospace" }}>
+                  <p className="text-[9px] font-mono text-black/40 dark:text-white/20 mt-0.5">
                     {step.sub}
                   </p>
                 </motion.div>
@@ -243,9 +232,8 @@ function SuccessContent() {
               <Link href="/">
                 <motion.span
                   whileHover={{ scale: 1.03, y: -1 }} whileTap={{ scale: 0.97 }}
-                  className="inline-flex items-center gap-2 px-7 py-3.5 font-bold uppercase tracking-widest text-black cursor-pointer"
-                  style={{ background: 'linear-gradient(135deg,#FF0000,#FF4500,#FFA500)', borderRadius: '2px',
-                           fontFamily: "'Barlow Condensed', system-ui, sans-serif", fontWeight: 700, letterSpacing: '0.18em' }}
+                  className="inline-flex items-center gap-2 px-7 py-3.5 font-body font-bold uppercase tracking-[0.18em] text-black cursor-pointer rounded-sm"
+                  style={{ background: 'linear-gradient(135deg,#FF0000,#FF4500,#FFA500)' }}
                 >
                   <Home size={14} />
                   Voltar para Home
@@ -254,9 +242,7 @@ function SuccessContent() {
               <Link href="/#produtos">
                 <motion.span
                   whileHover={{ scale: 1.03, y: -1 }} whileTap={{ scale: 0.97 }}
-                  className="inline-flex items-center gap-2 px-7 py-3.5 text-white/40 hover:text-white transition-all cursor-pointer"
-                  style={{ border: '1px solid rgba(255,255,255,0.1)', borderRadius: '2px',
-                           fontFamily: "'Barlow Condensed', system-ui, sans-serif", fontWeight: 600, letterSpacing: '0.18em', fontSize: '0.9rem' }}
+                  className="inline-flex items-center gap-2 px-7 py-3.5 text-black/50 dark:text-white/40 hover:text-black dark:hover:text-white transition-all cursor-pointer border border-black/10 dark:border-white/10 font-body font-semibold tracking-[0.18em] text-[0.9rem] rounded-sm"
                 >
                   <Package size={14} />
                   Continuar Comprando
@@ -272,7 +258,7 @@ function SuccessContent() {
 
 export default function SuccessPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-black flex items-center justify-center text-white/20">Carregando...</div>}>
+    <Suspense fallback={<div className="min-h-screen bg-white dark:bg-black flex items-center justify-center text-black/50 dark:text-white/20">Carregando...</div>}>
       <SuccessContent />
     </Suspense>
   );

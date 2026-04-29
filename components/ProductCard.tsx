@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -26,7 +26,7 @@ export default function ProductCard({ product, index = 0 }: Props) {
     ? Math.round((1 - product.price / product.originalPrice) * 100)
     : null;
 
-  const handleAdd = (e: React.MouseEvent) => {
+  const handleAdd = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     addItem({
@@ -41,13 +41,13 @@ export default function ProductCard({ product, index = 0 }: Props) {
     fireToast('Adicionado ao carrinho!', `${product.name} · ${selectedSize}`, 'cart');
     setAdded(true);
     setTimeout(() => setAdded(false), 1800);
-  };
+  }, [addItem, product, selectedSize]);
 
-  const handleSizeClick = (e: React.MouseEvent, sz: string) => {
+  const handleSizeClick = useCallback((e: React.MouseEvent, sz: string) => {
     e.preventDefault();
     e.stopPropagation();
     setSelectedSize(sz);
-  };
+  }, []);
 
   return (
     <Link href={`/product/${product.id}`} className="block">
@@ -63,7 +63,7 @@ export default function ProductCard({ product, index = 0 }: Props) {
         className="product-card-wrap group cursor-pointer"
       >
         {/* Image container */}
-        <div className="relative overflow-hidden aspect-[3/4] bg-[#0d0d0d]">
+        <div className="relative overflow-hidden aspect-[3/4] bg-gray-100 dark:bg-[#0d0d0d]">
           <div className="card-image absolute inset-0">
             <Image
               src={product.image}
@@ -97,8 +97,7 @@ export default function ProductCard({ product, index = 0 }: Props) {
               style={{ background: product.tagColor ?? '#FF0000' }}
             >
               <span
-                className="text-[10px] font-bold text-black tracking-widest"
-                style={{ fontFamily: "'Space Mono', monospace" }}
+                className="text-[10px] font-bold text-black tracking-widest font-mono"
               >
                 {product.tag}
               </span>
@@ -110,8 +109,7 @@ export default function ProductCard({ product, index = 0 }: Props) {
             <div className="absolute top-3 right-3 w-10 h-10 rounded-full bg-black/80 border border-white/10
                             flex items-center justify-center z-10">
               <span
-                className="text-[9px] font-bold leading-tight text-center"
-                style={{ fontFamily: "'Space Mono', monospace", color: '#FFA500' }}
+                className="text-[9px] font-bold leading-tight text-center font-mono text-fire-amber"
               >
                 -{discount}%
               </span>
@@ -127,8 +125,7 @@ export default function ProductCard({ product, index = 0 }: Props) {
                   style={{ background: '#FF0000' }}
                 />
                 <span
-                  className="text-[10px] tracking-wider"
-                  style={{ fontFamily: "'Space Mono', monospace", color: '#FF4500' }}
+                  className="text-[10px] tracking-wider font-mono text-fire-orange"
                 >
                   Últimas {product.stock} unidades
                 </span>
@@ -142,13 +139,7 @@ export default function ProductCard({ product, index = 0 }: Props) {
               whileTap={{ scale: 0.97 }}
               onClick={handleAdd}
               className="w-full py-3 flex items-center justify-center gap-2
-                         btn-fire font-body font-bold tracking-widest text-sm uppercase"
-              style={{
-                fontFamily: "'Barlow Condensed', system-ui, sans-serif",
-                fontWeight: 700,
-                letterSpacing: '0.12em',
-                borderRadius: '2px',
-              }}
+                         btn-fire font-body font-bold tracking-widest text-sm uppercase rounded-sm text-white"
             >
               {added ? (
                 <>
@@ -181,8 +172,7 @@ export default function ProductCard({ product, index = 0 }: Props) {
           {/* Category */}
           <div className="flex items-center justify-between">
             <span
-              className="text-[10px] tracking-[0.3em] uppercase"
-              style={{ fontFamily: "'Space Mono', monospace", color: '#FF450088' }}
+              className="text-[10px] font-mono tracking-[0.3em] uppercase text-fire-orange/80"
             >
               {product.category}
             </span>
@@ -201,14 +191,12 @@ export default function ProductCard({ product, index = 0 }: Props) {
           {/* Name */}
           <div>
             <h3
-              className="text-xl leading-tight text-white group-hover:text-fire-amber transition-colors duration-300"
-              style={{ fontFamily: "'Bebas Neue', Impact, sans-serif", letterSpacing: '0.05em' }}
+              className="text-xl font-display leading-tight text-black dark:text-white group-hover:text-fire-amber transition-colors duration-300 tracking-[0.05em]"
             >
               {product.name}
             </h3>
             <p
-              className="text-[11px] text-white/30 mt-0.5"
-              style={{ fontFamily: "'Barlow Condensed', system-ui, sans-serif" }}
+              className="text-[11px] font-body text-black/50 dark:text-white/30 mt-0.5"
             >
               {product.subtitle}
             </p>
@@ -220,12 +208,11 @@ export default function ProductCard({ product, index = 0 }: Props) {
               <button
                 key={sz}
                 onClick={(e) => handleSizeClick(e, sz)}
-                className={`px-2.5 py-1 text-[10px] font-mono border transition-all duration-200 ${
+                className={`px-2.5 py-1 text-[10px] font-mono border transition-all duration-200 rounded-sm ${
                   selectedSize === sz
                     ? 'border-fire-orange text-fire-orange bg-fire-orange/10'
-                    : 'border-white/10 text-white/40 hover:border-white/30 hover:text-white/60'
+                    : 'border-black/10 dark:border-white/10 text-black/40 dark:text-white/40 hover:border-black/30 dark:hover:border-white/30 hover:text-black/60 dark:hover:text-white/60'
                 }`}
-                style={{ fontFamily: "'Space Mono', monospace", borderRadius: '1px' }}
               >
                 {sz}
               </button>
@@ -236,21 +223,13 @@ export default function ProductCard({ product, index = 0 }: Props) {
           <div className="flex items-end justify-between pt-1">
             <div>
               <div
-                className="text-xl font-display leading-none"
-                style={{
-                  fontFamily: "'Bebas Neue', Impact, sans-serif",
-                  background: 'linear-gradient(135deg, #FF0000, #FF4500, #FFA500)',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                  backgroundClip: 'text',
-                }}
+                className="text-xl font-display leading-none text-fire-glow"
               >
                 {fmt(product.price)}
               </div>
               {product.originalPrice && (
                 <div
-                  className="text-[11px] text-white/25 line-through mt-0.5"
-                  style={{ fontFamily: "'Space Mono', monospace" }}
+                  className="text-[11px] font-mono text-black/30 dark:text-white/25 line-through mt-0.5"
                 >
                   {fmt(product.originalPrice)}
                 </div>
@@ -263,7 +242,7 @@ export default function ProductCard({ product, index = 0 }: Props) {
                 <div
                   key={c.hex}
                   title={c.name}
-                  className="w-3 h-3 rounded-full border border-white/10"
+                  className="w-3 h-3 rounded-full border border-black/10 dark:border-white/10"
                   style={{ background: c.hex }}
                 />
               ))}

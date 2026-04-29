@@ -36,12 +36,10 @@ function FInput({ label, value, onChange, placeholder = '', type = 'text', texta
 }) {
   const [focused, setFocused] = useState(false);
   const base = {
-    fontFamily: "'Barlow Condensed', system-ui, sans-serif",
-    background: focused ? 'rgba(255,69,0,0.04)' : 'rgba(255,255,255,0.02)',
-    border: `1px solid ${focused ? '#FF4500' : 'rgba(255,255,255,0.08)'}`,
+    background: focused ? 'rgba(255,69,0,0.04)' : 'rgba(128,128,128,0.05)',
+    border: `1px solid ${focused ? '#FF4500' : 'rgba(128,128,128,0.2)'}`,
     boxShadow: focused ? '0 0 12px rgba(255,69,0,0.15)' : 'none',
     borderRadius: '2px',
-    color: '#fff',
     outline: 'none',
     width: '100%',
     padding: '10px 14px',
@@ -50,17 +48,17 @@ function FInput({ label, value, onChange, placeholder = '', type = 'text', texta
   };
   return (
     <label className="block">
-      <span className="block text-[10px] tracking-[0.2em] uppercase mb-1.5"
-            style={{ fontFamily: "'Space Mono', monospace", color: focused ? '#FF4500' : 'rgba(255,255,255,0.3)' }}>
+      <span className="block text-[10px] tracking-[0.2em] uppercase mb-1.5 font-mono"
+            style={{ color: focused ? '#FF4500' : 'rgba(128,128,128,0.5)' }}>
         {label}
       </span>
       {textarea
         ? <textarea rows={3} value={value} placeholder={placeholder}
                     onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
-                    onChange={(e) => onChange(e.target.value)} style={{ ...base, resize: 'vertical' }} />
+                    onChange={(e) => onChange(e.target.value)} style={{ ...base, resize: 'vertical' }} className="font-body text-black dark:text-white" />
         : <input type={type} value={value} placeholder={placeholder}
                  onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
-                 onChange={(e) => onChange(e.target.value)} style={base} />
+                 onChange={(e) => onChange(e.target.value)} style={base} className="font-body text-black dark:text-white" />
       }
     </label>
   );
@@ -169,20 +167,18 @@ export default function ProductForm({ onClose }: { onClose: () => void }) {
         initial={{ scale: 0.92, y: 20 }}
         animate={{ scale: 1, y: 0 }}
         exit={{ scale: 0.92, y: 20 }}
-        className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto"
+        className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-white dark:bg-[#0d0d0d]"
         style={{
-          background: '#0d0d0d',
           border: '1px solid rgba(255,69,0,0.2)',
           borderRadius: '4px',
           boxShadow: '0 0 60px rgba(255,34,0,0.15)',
         }}
       >
         {/* Header */}
-        <div className="sticky top-0 z-10 flex items-center justify-between px-6 py-4 border-b border-white/[0.06]"
-             style={{ background: '#0d0d0d' }}>
-          <h2 className="text-2xl" style={{ fontFamily: "'Bebas Neue', Impact, sans-serif", letterSpacing: '0.08em' }}>
-            <span style={{ color: 'rgba(255,255,255,0.3)' }}>{isNew ? 'NOVO' : 'EDITAR'} </span>
-            <span style={{ background: 'linear-gradient(135deg,#FF0000,#FFA500)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>PRODUTO</span>
+        <div className="sticky top-0 z-10 flex items-center justify-between px-6 py-4 border-b border-black/10 dark:border-white/[0.06] bg-white dark:bg-[#0d0d0d]">
+          <h2 className="text-2xl font-display tracking-[0.08em]">
+            <span className="text-black/30 dark:text-white/30">{isNew ? 'NOVO' : 'EDITAR'} </span>
+            <span className="text-transparent bg-clip-text bg-gradient-to-br from-[#FF0000] to-[#FFA500]">PRODUTO</span>
           </h2>
           <div className="flex items-center gap-3">
             <button 
@@ -202,12 +198,11 @@ export default function ProductForm({ onClose }: { onClose: () => void }) {
                 });
                 setPreviewError(false);
               }}
-              className="px-3 py-1 text-[10px] border border-white/10 text-white/30 hover:text-white hover:border-white/20 transition-all uppercase"
-              style={{ fontFamily: "'Space Mono', monospace", borderRadius: '2px' }}
+              className="px-3 py-1 text-[10px] border border-black/10 dark:border-white/10 text-black/40 dark:text-white/30 hover:text-black dark:hover:text-white hover:border-black/20 dark:hover:border-white/20 transition-all uppercase font-mono rounded-sm"
             >
               Carregar Modelo
             </button>
-            <button onClick={onClose} className="p-1.5 text-white/30 hover:text-white transition-colors">
+            <button onClick={onClose} className="p-1.5 text-black/40 dark:text-white/30 hover:text-black dark:hover:text-white transition-colors">
               <X size={18} />
             </button>
           </div>
@@ -218,13 +213,13 @@ export default function ProductForm({ onClose }: { onClose: () => void }) {
 
         <div className="p-6 space-y-6">
           {/* Image preview */}
-          <div className="relative aspect-video overflow-hidden" style={{ borderRadius: '3px', background: '#111' }}>
+          <div className="relative aspect-[3/4] w-full max-w-xs mx-auto overflow-hidden bg-black/5 dark:bg-[#111] rounded-[3px]">
             {form.image && !previewError
               ? <img src={form.image} alt="preview" onError={() => setPreviewError(true)}
                      className="w-full h-full object-cover" />
               : <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
-                  <ImageIcon size={32} className="text-white/10" />
-                  <span className="text-[10px] text-white/20" style={{ fontFamily: "'Space Mono', monospace" }}>
+                  <ImageIcon size={32} className="text-black/10 dark:text-white/10" />
+                  <span className="text-[10px] text-black/40 dark:text-white/20 font-mono">
                     Cole a URL da imagem abaixo
                   </span>
                 </div>
@@ -258,18 +253,9 @@ export default function ProductForm({ onClose }: { onClose: () => void }) {
                 />
                 <label
                   htmlFor="image-upload"
-                  className={`flex items-center gap-2 px-4 py-2.5 cursor-pointer transition-all duration-200 ${
+                  className={`flex items-center gap-2 px-4 py-2.5 cursor-pointer transition-all duration-200 font-body font-semibold tracking-[0.1em] text-[0.8rem] rounded-sm border border-fire-orange/40 text-fire-orange ${
                     uploading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-fire-orange/10'
                   }`}
-                  style={{
-                    fontFamily: "'Barlow Condensed', system-ui, sans-serif",
-                    fontWeight: 600,
-                    fontSize: '0.8rem',
-                    letterSpacing: '0.1em',
-                    borderRadius: '2px',
-                    border: '1px solid rgba(255,69,0,0.3)',
-                    color: '#FF4500'
-                  }}
                 >
                   {uploading ? (
                     <Loader2 size={14} className="animate-spin" />
@@ -291,20 +277,16 @@ export default function ProductForm({ onClose }: { onClose: () => void }) {
           {/* Category + Tag */}
           <div className="grid grid-cols-2 gap-4">
             <label className="block">
-              <span className="block text-[10px] tracking-[0.2em] uppercase mb-1.5 text-white/30"
-                    style={{ fontFamily: "'Space Mono', monospace" }}>Categoria</span>
+              <span className="block text-[10px] tracking-[0.2em] uppercase mb-1.5 text-black/50 dark:text-white/30 font-mono">Categoria</span>
               <select value={form.category} onChange={(e) => set('category', e.target.value)}
-                      className="w-full px-3 py-2.5 text-white text-sm outline-none"
-                      style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '2px', fontFamily: "'Barlow Condensed', system-ui, sans-serif" }}>
+                      className="w-full px-3 py-2.5 text-black dark:text-white text-sm outline-none font-body bg-black/5 dark:bg-white/[0.03] border border-black/10 dark:border-white/[0.08] rounded-sm">
                 {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
               </select>
             </label>
             <label className="block">
-              <span className="block text-[10px] tracking-[0.2em] uppercase mb-1.5 text-white/30"
-                    style={{ fontFamily: "'Space Mono', monospace" }}>Badge / Tag</span>
+              <span className="block text-[10px] tracking-[0.2em] uppercase mb-1.5 text-black/50 dark:text-white/30 font-mono">Badge / Tag</span>
               <select value={form.tag ?? ''} onChange={(e) => set('tag', e.target.value || undefined)}
-                      className="w-full px-3 py-2.5 text-white text-sm outline-none"
-                      style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '2px', fontFamily: "'Barlow Condensed', system-ui, sans-serif" }}>
+                      className="w-full px-3 py-2.5 text-black dark:text-white text-sm outline-none font-body bg-black/5 dark:bg-white/[0.03] border border-black/10 dark:border-white/[0.08] rounded-sm">
                 {TAGS.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
               </select>
             </label>
@@ -316,20 +298,17 @@ export default function ProductForm({ onClose }: { onClose: () => void }) {
 
           {/* Sizes */}
           <div>
-            <span className="block text-[10px] tracking-[0.2em] uppercase mb-3 text-white/30"
-                  style={{ fontFamily: "'Space Mono', monospace" }}>Tamanhos Disponíveis</span>
+            <span className="block text-[10px] tracking-[0.2em] uppercase mb-3 text-black/50 dark:text-white/30 font-mono">Tamanhos Disponíveis</span>
             <div className="flex gap-2 flex-wrap">
               {SIZES_ALL.map((sz) => {
                 const on = form.sizes.includes(sz);
                 return (
                   <button key={sz} onClick={() => toggleSize(sz)}
-                          className="px-4 py-2 text-xs transition-all duration-200"
+                          className="px-4 py-2 text-xs transition-all duration-200 font-mono rounded-sm"
                           style={{
-                            fontFamily: "'Space Mono', monospace",
-                            borderRadius: '2px',
-                            border: on ? '1px solid #FF4500' : '1px solid rgba(255,255,255,0.1)',
-                            background: on ? 'rgba(255,69,0,0.12)' : 'rgba(255,255,255,0.02)',
-                            color: on ? '#FF4500' : 'rgba(255,255,255,0.4)',
+                            border: on ? '1px solid #FF4500' : '1px solid rgba(128,128,128,0.2)',
+                            background: on ? 'rgba(255,69,0,0.12)' : 'rgba(128,128,128,0.05)',
+                            color: on ? '#FF4500' : 'rgba(128,128,128,0.6)',
                             boxShadow: on ? '0 0 10px rgba(255,69,0,0.25)' : 'none',
                           }}>
                     {sz}
@@ -341,24 +320,21 @@ export default function ProductForm({ onClose }: { onClose: () => void }) {
 
           {/* Colors */}
           <div>
-            <span className="block text-[10px] tracking-[0.2em] uppercase mb-3 text-white/30"
-                  style={{ fontFamily: "'Space Mono', monospace" }}>Cores</span>
+            <span className="block text-[10px] tracking-[0.2em] uppercase mb-3 text-black/50 dark:text-white/30 font-mono">Cores</span>
             <div className="space-y-2 mb-3">
               {form.colors.map((c, i) => (
-                <div key={i} className="flex items-center gap-3 px-3 py-2"
-                     style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '2px' }}>
-                  <div className="w-5 h-5 rounded-full border border-white/20 flex-shrink-0" style={{ background: c.hex }} />
-                  <span className="text-sm text-white/60 flex-1" style={{ fontFamily: "'Barlow Condensed', system-ui, sans-serif" }}>{c.name}</span>
-                  <button onClick={() => removeColor(i)} className="text-white/20 hover:text-red-400 transition-colors"><Trash2 size={12} /></button>
+                <div key={i} className="flex items-center gap-3 px-3 py-2 bg-black/5 dark:bg-white/[0.02] border border-black/10 dark:border-white/[0.06] rounded-sm">
+                  <div className="w-5 h-5 rounded-full border border-black/20 dark:border-white/20 flex-shrink-0" style={{ background: c.hex }} />
+                  <span className="text-sm text-black/60 dark:text-white/60 flex-1 font-body">{c.name}</span>
+                  <button onClick={() => removeColor(i)} className="text-black/30 dark:text-white/20 hover:text-red-500 dark:hover:text-red-400 transition-colors"><Trash2 size={12} /></button>
                 </div>
               ))}
             </div>
             <div className="flex gap-2">
               <input value={newColorName} onChange={(e) => setNewColorName(e.target.value)} placeholder="Nome da cor"
-                     className="flex-1 px-3 py-2 text-sm text-white outline-none"
-                     style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '2px', fontFamily: "'Barlow Condensed', system-ui, sans-serif" }} />
+                     className="flex-1 px-3 py-2 text-sm text-black dark:text-white outline-none font-body bg-black/5 dark:bg-white/[0.02] border border-black/10 dark:border-white/[0.08] rounded-sm" />
               <input type="color" value={newColorHex} onChange={(e) => setNewColorHex(e.target.value)}
-                     className="w-10 h-10 cursor-pointer rounded border border-white/10 bg-transparent" />
+                     className="w-10 h-10 cursor-pointer rounded border border-black/10 dark:border-white/10 bg-transparent" />
               <button onClick={addColor} className="px-3 py-2 text-xs font-bold text-black"
                       style={{ background: 'linear-gradient(135deg,#FF0000,#FFA500)', borderRadius: '2px' }}>
                 <Plus size={14} />
@@ -368,14 +344,12 @@ export default function ProductForm({ onClose }: { onClose: () => void }) {
 
           {/* Features */}
           <div>
-            <span className="block text-[10px] tracking-[0.2em] uppercase mb-3 text-white/30"
-                  style={{ fontFamily: "'Space Mono', monospace" }}>Características</span>
+            <span className="block text-[10px] tracking-[0.2em] uppercase mb-3 text-black/50 dark:text-white/30 font-mono">Características</span>
             <div className="flex flex-wrap gap-2 mb-3">
               {form.features.map((f, i) => (
-                <span key={i} className="flex items-center gap-1.5 px-3 py-1.5 text-[11px]"
-                      style={{ background: 'rgba(255,69,0,0.08)', border: '1px solid rgba(255,69,0,0.2)', color: '#FF4500', borderRadius: '2px', fontFamily: "'Space Mono', monospace" }}>
+                <span key={i} className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] bg-fire-orange/10 border border-fire-orange/30 text-fire-orange rounded-sm font-mono">
                   {f}
-                  <button onClick={() => removeFeature(i)} className="hover:text-white transition-colors"><X size={10} /></button>
+                  <button onClick={() => removeFeature(i)} className="hover:text-black dark:hover:text-white transition-colors"><X size={10} /></button>
                 </span>
               ))}
             </div>
@@ -383,8 +357,7 @@ export default function ProductForm({ onClose }: { onClose: () => void }) {
               <input value={newFeature} onChange={(e) => setNewFeature(e.target.value)}
                      onKeyDown={(e) => e.key === 'Enter' && addFeature()}
                      placeholder="Ex: Refletivo 360°"
-                     className="flex-1 px-3 py-2 text-sm text-white outline-none"
-                     style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '2px', fontFamily: "'Barlow Condensed', system-ui, sans-serif" }} />
+                     className="flex-1 px-3 py-2 text-sm text-black dark:text-white outline-none font-body bg-black/5 dark:bg-white/[0.02] border border-black/10 dark:border-white/[0.08] rounded-sm" />
               <button onClick={addFeature} className="px-3 py-2 text-xs font-bold text-black"
                       style={{ background: 'linear-gradient(135deg,#FF0000,#FFA500)', borderRadius: '2px' }}>
                 <Plus size={14} />
@@ -394,16 +367,14 @@ export default function ProductForm({ onClose }: { onClose: () => void }) {
         </div>
 
         {/* Footer actions */}
-        <div className="sticky bottom-0 flex gap-3 px-6 py-4 border-t border-white/[0.06]"
-             style={{ background: '#0d0d0d' }}>
+        <div className="sticky bottom-0 flex gap-3 px-6 py-4 border-t border-black/10 dark:border-white/[0.06] bg-white dark:bg-[#0d0d0d]">
           <button onClick={onClose}
-                  className="px-5 py-2.5 text-sm text-white/40 border border-white/10 hover:text-white hover:border-white/20 transition-all"
-                  style={{ fontFamily: "'Barlow Condensed', system-ui, sans-serif", borderRadius: '2px' }}>
+                  className="px-5 py-2.5 text-sm text-black/50 dark:text-white/40 border border-black/10 dark:border-white/10 hover:text-black dark:hover:text-white hover:border-black/20 dark:hover:border-white/20 transition-all font-body rounded-sm">
             Cancelar
           </button>
           <motion.button onClick={handleSave} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
-                         className="flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-bold uppercase tracking-widest text-black"
-                         style={{ background: 'linear-gradient(135deg,#FF0000,#FF4500,#FFA500)', borderRadius: '2px', fontFamily: "'Barlow Condensed', system-ui, sans-serif", fontWeight: 700, letterSpacing: '0.15em' }}>
+                         className="flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-bold uppercase tracking-widest text-black font-body rounded-sm"
+                         style={{ background: 'linear-gradient(135deg,#FF0000,#FF4500,#FFA500)' }}>
             <Save size={14} />
             Salvar Produto
           </motion.button>

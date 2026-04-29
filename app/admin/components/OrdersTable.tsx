@@ -42,34 +42,29 @@ function OrderRow({ order }: { order: Order }) {
     <>
       <motion.tr
         layout
-        className="border-b border-white/[0.04] hover:bg-white/[0.015] transition-colors cursor-pointer"
+        className="border-b border-black/5 dark:border-white/[0.04] hover:bg-black/[0.02] dark:hover:bg-white/[0.015] transition-colors cursor-pointer"
         onClick={() => setExpanded(!expanded)}
       >
         <td className="px-4 py-3">
-          <span className="text-sm text-white/70" style={{ fontFamily: "'Space Mono', monospace", fontSize: '0.7rem' }}>
+          <span className="text-[0.7rem] text-black/70 dark:text-white/70 font-mono">
             #{order.id.slice(0, 8)}
           </span>
         </td>
         <td className="px-4 py-3">
           <div>
-            <p className="text-sm text-white" style={{ fontFamily: "'Barlow Condensed', system-ui, sans-serif", fontWeight: 600 }}>
+            <p className="text-sm text-black dark:text-white font-body font-semibold">
               {order.customer.name}
             </p>
-            <p className="text-[10px] text-white/30" style={{ fontFamily: "'Space Mono', monospace" }}>
+            <p className="text-[10px] text-black/40 dark:text-white/30 font-mono">
               {order.customer.email}
             </p>
           </div>
         </td>
         <td className="px-4 py-3 hidden sm:table-cell">
-          <span className="text-xs text-white/40" style={{ fontFamily: "'Space Mono', monospace" }}>{date}</span>
+          <span className="text-xs text-black/50 dark:text-white/40 font-mono">{date}</span>
         </td>
         <td className="px-4 py-3">
-          <span className="font-bold" style={{
-            fontFamily: "'Bebas Neue', Impact, sans-serif",
-            fontSize: '1.1rem',
-            background: 'linear-gradient(135deg,#FF4500,#FFA500)',
-            WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text',
-          }}>
+          <span className="font-bold text-[1.1rem] font-display text-transparent bg-clip-text bg-gradient-to-br from-[#FF4500] to-[#FFA500]">
             {formatCurrency(order.total)}
           </span>
         </td>
@@ -77,24 +72,23 @@ function OrderRow({ order }: { order: Order }) {
           <select
             value={order.status}
             onChange={(e) => changeStatus(order.id, e.target.value as OrderStatus)}
-            className="text-xs px-2 py-1.5 outline-none cursor-pointer"
+            className="text-xs px-2 py-1.5 outline-none cursor-pointer font-mono"
             style={{
               background: s.bg,
               border: `1px solid ${s.border}`,
               color: s.color,
               borderRadius: '2px',
-              fontFamily: "'Space Mono', monospace",
             }}
           >
             {ALL_STATUSES.map((st) => (
-              <option key={st} value={st} style={{ background: '#111', color: '#fff' }}>{STATUS_LABELS[st]}</option>
+              <option key={st} value={st} className="bg-white dark:bg-[#111] text-black dark:text-white">{STATUS_LABELS[st]}</option>
             ))}
           </select>
         </td>
         <td className="px-4 py-3">
           <div className="flex items-center gap-1.5">
             <span style={{ color: s.color }}>{PAY_ICONS[order.payMethod]}</span>
-            <span className="text-[10px] uppercase text-white/30" style={{ fontFamily: "'Space Mono', monospace" }}>
+            <span className="text-[10px] uppercase text-black/40 dark:text-white/30 font-mono">
               {order.payMethod}
             </span>
           </div>
@@ -115,26 +109,23 @@ function OrderRow({ order }: { order: Order }) {
             exit={{ opacity: 0 }}
           >
             <td colSpan={7} className="px-6 pb-6 pt-2">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6"
-                   style={{ background: 'rgba(255,255,255,0.015)', border: '1px solid rgba(255,255,255,0.04)', borderRadius: '3px' }}>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6 border border-black/5 dark:border-white/[0.04] bg-black/[0.02] dark:bg-white/[0.015] rounded-sm">
                 
                 {/* Detalhes do Cliente */}
                 <div className="space-y-4">
-                  <div className="flex items-center gap-2 text-[10px] text-white/30 tracking-widest uppercase mb-2"
-                       style={{ fontFamily: "'Space Mono', monospace" }}>
+                  <div className="flex items-center gap-2 text-[10px] text-black/50 dark:text-white/30 tracking-widest uppercase mb-2 font-mono">
                     <User size={12} /> Dados do Cliente
                   </div>
                   <div className="space-y-2 font-mono text-[11px]">
-                    <p><span className="text-white/20">NOME:</span> <span className="text-white/80">{order.customer.name}</span></p>
-                    <p><span className="text-white/20">EMAIL:</span> <span className="text-white/80">{order.customer.email}</span></p>
-                    <p><span className="text-white/20">CPF:</span> <span className="text-fire-orange">{order.customer.cpf}</span></p>
+                    <p><span className="text-black/40 dark:text-white/20">NOME:</span> <span className="text-black/80 dark:text-white/80">{order.customer.name}</span></p>
+                    <p><span className="text-black/40 dark:text-white/20">EMAIL:</span> <span className="text-black/80 dark:text-white/80">{order.customer.email}</span></p>
+                    <p><span className="text-black/40 dark:text-white/20">CPF:</span> <span className="text-fire-orange">{order.customer.cpf}</span></p>
                   </div>
 
-                  <div className="flex items-center gap-2 text-[10px] text-white/30 tracking-widest uppercase mb-2 pt-2"
-                       style={{ fontFamily: "'Space Mono', monospace" }}>
+                  <div className="flex items-center gap-2 text-[10px] text-black/50 dark:text-white/30 tracking-widest uppercase mb-2 pt-2 font-mono">
                     <MapPin size={12} /> Endereço de Entrega
                   </div>
-                  <div className="space-y-1 font-mono text-[11px] text-white/80">
+                  <div className="space-y-1 font-mono text-[11px] text-black/80 dark:text-white/80">
                     <p>{order.customer.address}, {order.customer.number}</p>
                     {order.customer.complement && <p>{order.customer.complement}</p>}
                     <p>{order.customer.neighborhood}</p>
@@ -145,8 +136,7 @@ function OrderRow({ order }: { order: Order }) {
 
                 {/* Itens do Pedido */}
                 <div className="space-y-4">
-                   <div className="flex items-center gap-2 text-[10px] text-white/30 tracking-widest uppercase mb-2"
-                       style={{ fontFamily: "'Space Mono', monospace" }}>
+                   <div className="flex items-center gap-2 text-[10px] text-black/50 dark:text-white/30 tracking-widest uppercase mb-2 font-mono">
                     <Package size={12} /> Itens do Pedido
                   </div>
                   <div className="space-y-3">
@@ -156,27 +146,22 @@ function OrderRow({ order }: { order: Order }) {
                           <Image src={item.image} alt={item.name} fill className="object-cover object-top" />
                         </div>
                         <div className="flex-1">
-                          <p className="text-sm text-white" style={{ fontFamily: "'Bebas Neue', Impact, sans-serif", letterSpacing: '0.05em' }}>
+                          <p className="text-sm text-black dark:text-white font-display tracking-[0.05em]">
                             {item.name}
                           </p>
-                          <p className="text-[10px] text-white/30" style={{ fontFamily: "'Space Mono', monospace" }}>
+                          <p className="text-[10px] text-black/50 dark:text-white/30 font-mono">
                             TAM: {item.size} · {item.color} · Qtd: {item.quantity}
                           </p>
                         </div>
-                        <span style={{
-                          fontFamily: "'Bebas Neue', Impact, sans-serif",
-                          background: 'linear-gradient(135deg,#FF4500,#FFA500)',
-                          WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text',
-                        }}>
+                        <span className="font-display text-transparent bg-clip-text bg-gradient-to-br from-[#FF4500] to-[#FFA500]">
                           {formatCurrency(item.price * item.quantity)}
                         </span>
                       </div>
                     ))}
                   </div>
-                  <div className="flex justify-between pt-4 border-t border-white/[0.05] text-sm text-white/40"
-                       style={{ fontFamily: "'Space Mono', monospace", fontSize: '0.7rem' }}>
+                  <div className="flex justify-between pt-4 border-t border-black/5 dark:border-white/[0.05] text-[0.7rem] text-black/60 dark:text-white/40 font-mono">
                     <span>Subtotal: {formatCurrency(order.total)}</span>
-                    <span>Total: <span style={{ color: '#FF4500', fontSize: '1rem' }}>{formatCurrency(order.total)}</span></span>
+                    <span>Total: <span className="text-[1rem] text-fire-orange">{formatCurrency(order.total)}</span></span>
                   </div>
                 </div>
               </div>
@@ -193,7 +178,7 @@ export default function OrdersTable() {
 
   const total   = orders.reduce((a, o) => a + o.total, 0);
   const approved = orders.filter((o) => o.status === 'Pago').length;
-  const pending  = orders.filter((o) => o.status === 'Pendente').length;
+  const pending  = orders.filter((o) => o.status?.toLowerCase() === 'pendente').length;
 
   return (
     <div className="space-y-6">
@@ -205,11 +190,11 @@ export default function OrdersTable() {
           { label: 'Pendentes',        value: pending.toString(),        color: '#FFA500' },
           { label: 'Receita Total',    value: formatCurrency(total),               color: '#FF4500' },
         ].map((s) => (
-          <div key={s.label} className="p-4"
-               style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '3px' }}>
-            <p className="text-[10px] text-white/30 tracking-widest uppercase mb-2"
-               style={{ fontFamily: "'Space Mono', monospace" }}>{s.label}</p>
-            <p className="text-2xl" style={{ fontFamily: "'Bebas Neue', Impact, sans-serif", color: s.color }}>
+          <div key={s.label} className="p-4 border border-black/5 dark:border-white/[0.05] bg-black/[0.02] dark:bg-white/[0.02] rounded-[3px]">
+            <p className="text-[10px] text-black/50 dark:text-white/30 tracking-widest uppercase mb-2 font-mono">
+              {s.label}
+            </p>
+            <p className="text-2xl font-display" style={{ color: s.color }}>
               {s.value}
             </p>
           </div>
@@ -218,21 +203,21 @@ export default function OrdersTable() {
 
       {/* Table */}
       {orders.length === 0 ? (
-        <div className="text-center py-16 text-white/20">
-          <Package size={40} className="mx-auto mb-4 opacity-20" />
-          <p style={{ fontFamily: "'Bebas Neue', Impact, sans-serif", fontSize: '1.5rem', letterSpacing: '0.1em' }}>
+        <div className="text-center py-16 text-black/40 dark:text-white/20">
+          <Package size={40} className="mx-auto mb-4 opacity-40 dark:opacity-20" />
+          <p className="font-display text-[1.5rem] tracking-[0.1em]">
             Nenhum pedido ainda
           </p>
         </div>
       ) : (
-        <div className="overflow-x-auto" style={{ border: '1px solid rgba(255,255,255,0.05)', borderRadius: '4px' }}>
+        <div className="overflow-x-auto border border-black/10 dark:border-white/5 rounded-md">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-white/[0.06]"
-                  style={{ background: 'rgba(255,255,255,0.02)' }}>
+              <tr className="border-b border-black/5 dark:border-white/[0.06] bg-black/[0.02] dark:bg-white/[0.02]">
                 {['Pedido', 'Cliente', 'Data', 'Total', 'Status', 'Pagamento', ''].map((h) => (
-                  <th key={h} className="px-4 py-3 text-left text-[10px] tracking-[0.2em] uppercase text-white/30"
-                      style={{ fontFamily: "'Space Mono', monospace" }}>{h}</th>
+                  <th key={h} className="px-4 py-3 text-left text-[10px] tracking-[0.2em] uppercase text-black/50 dark:text-white/30 font-mono">
+                    {h}
+                  </th>
                 ))}
               </tr>
             </thead>

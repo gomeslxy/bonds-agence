@@ -26,8 +26,8 @@ function FireInput({
   return (
     <div className={half ? 'flex-1 min-w-[140px]' : 'w-full'}>
       <label
-        className="block text-[10px] tracking-[0.2em] uppercase mb-1.5 transition-colors duration-200"
-        style={{ fontFamily: "'Space Mono', monospace", color: focused ? '#FF4500' : 'rgba(255,255,255,0.3)' }}
+        className="block text-[10px] tracking-[0.2em] uppercase mb-1.5 transition-colors duration-200 font-mono"
+        style={{ color: focused ? '#FF4500' : 'rgba(128,128,128,0.5)' }}
       >
         {label}
       </label>
@@ -40,24 +40,15 @@ function FireInput({
           onFocus={() => setFocused(true)}
           onBlur={() => setFocused(false)}
           maxLength={maxLength}
-          className="w-full px-4 py-3 bg-transparent text-white placeholder-white/20 text-sm outline-none transition-all duration-300"
-          style={{
-            fontFamily: "'Barlow Condensed', system-ui, sans-serif",
-            fontWeight: 500,
-            fontSize: '1rem',
-            border: error ? '1px solid #ef4444' : focused ? '1px solid #FF4500' : '1px solid rgba(255,255,255,0.08)',
-            borderRadius: '2px',
-            background: focused ? 'rgba(255,69,0,0.04)' : 'rgba(255,255,255,0.02)',
-            boxShadow: error ? '0 0 10px rgba(239,68,68,0.2)' : focused ? '0 0 16px rgba(255,69,0,0.2), inset 0 0 12px rgba(255,69,0,0.04)' : 'none',
-            transition: 'all 0.25s ease',
-          }}
+          className={`w-full px-4 py-3 bg-transparent text-black dark:text-white placeholder-black/30 dark:placeholder-white/20 text-sm outline-none transition-all duration-300 font-body font-medium rounded-sm ${
+            error ? 'border border-red-500 drop-shadow-[0_0_10px_rgba(239,68,68,0.2)]' : focused ? 'border border-fire-orange bg-fire-orange/5 drop-shadow-[0_0_16px_rgba(255,69,0,0.2)]' : 'border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/[0.02]'
+          }`}
         />
         {focused && !error && (
           <motion.div
             initial={{ scaleX: 0 }}
             animate={{ scaleX: 1 }}
-            className="absolute bottom-0 left-0 right-0 h-px origin-left"
-            style={{ background: 'linear-gradient(90deg, #FF0000, #FF4500, #FFA500)' }}
+            className="absolute bottom-0 left-0 right-0 h-px origin-left bg-gradient-to-r from-[#FF0000] via-[#FF4500] to-[#FFA500]"
           />
         )}
       </div>
@@ -69,22 +60,13 @@ function FireInput({
 function SectionTitle({ children, step }: { children: React.ReactNode; step: number }) {
   return (
     <div className="flex items-center gap-3 mb-6">
-      <div className="w-7 h-7 flex items-center justify-center flex-shrink-0"
-           style={{
-             background: 'linear-gradient(135deg, #FF0000, #FFA500)',
-             borderRadius: '2px',
-             fontFamily: "'Space Mono', monospace",
-             fontSize: '0.75rem',
-             color: 'black',
-             fontWeight: 700,
-           }}>
+      <div className="w-7 h-7 flex items-center justify-center flex-shrink-0 bg-gradient-to-br from-[#FF0000] to-[#FFA500] rounded-sm font-mono text-[0.75rem] text-black font-bold">
         {step}
       </div>
-      <h2 className="text-2xl text-white"
-          style={{ fontFamily: "'Bebas Neue', Impact, sans-serif", letterSpacing: '0.1em' }}>
+      <h2 className="text-2xl text-black dark:text-white font-display tracking-[0.1em]">
         {children}
       </h2>
-      <div className="flex-1 h-px" style={{ background: 'linear-gradient(90deg, rgba(255,69,0,0.2), transparent)' }} />
+      <div className="flex-1 h-px bg-gradient-to-r from-fire-orange/20 to-transparent" />
     </div>
   );
 }
@@ -270,30 +252,26 @@ export default function CartPage() {
   };
 
   return (
-    <main className="min-h-screen bg-black">
+    <main className="min-h-screen bg-white dark:bg-black">
       <Navbar />
       <CartSidebar />
 
       {/* Background glow */}
-      <div className="fixed inset-0 pointer-events-none z-0"
-           style={{ background: 'radial-gradient(ellipse at 20% 50%, rgba(255,69,0,0.04) 0%, transparent 60%)' }} />
+      <div className="fixed inset-0 pointer-events-none z-0 bg-[radial-gradient(ellipse_at_20%_50%,rgba(255,69,0,0.04)_0%,transparent_60%)]" />
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-28 pb-40">
 
         {/* Page title */}
         <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-          <Link href="/" className="inline-flex items-center gap-2 text-white/30 hover:text-white transition-colors mb-8 group"
-                style={{ fontFamily: "'Space Mono', monospace", fontSize: '0.7rem', letterSpacing: '0.2em' }}>
+          <Link href="/" className="inline-flex items-center gap-2 text-black/50 dark:text-white/30 hover:text-black dark:hover:text-white transition-colors mb-8 group font-mono text-[0.7rem] tracking-[0.2em]">
             <ArrowLeft size={12} className="group-hover:-translate-x-1 transition-transform" />
             CONTINUAR COMPRANDO
           </Link>
-          <h1 className="text-[clamp(3rem,8vw,6rem)] leading-none mb-12"
-              style={{ fontFamily: "'Bebas Neue', Impact, sans-serif", letterSpacing: '0.04em' }}>
-            <span style={{ color: 'rgba(255,255,255,0.25)' }}>MEU </span>
-            <span style={{
-              background: 'linear-gradient(135deg, #FF0000, #FF4500, #FFA500)',
-              WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text',
-            }}>CARRINHO</span>
+          <h1 className="text-[clamp(3rem,8vw,6rem)] leading-none mb-12 font-display tracking-[0.04em]">
+            <span className="text-black/30 dark:text-white/25">MEU </span>
+            <span className="text-transparent bg-clip-text bg-gradient-to-br from-[#FF0000] via-[#FF4500] to-[#FFA500]">
+              CARRINHO
+            </span>
           </h1>
         </motion.div>
 
@@ -309,7 +287,7 @@ export default function CartPage() {
               <div className="space-y-3">
                 <AnimatePresence initial={false}>
                   {items.length === 0 ? (
-                    <p className="text-white/30 font-mono text-sm py-8 text-center border border-dashed border-white/10">Carrinho vazio</p>
+                    <p className="text-black/50 dark:text-white/30 font-mono text-sm py-8 text-center border border-dashed border-black/10 dark:border-white/10">Carrinho vazio</p>
                   ) : items.map((item) => (
                     <motion.div
                       key={`${item.id}-${item.size}`}
@@ -318,12 +296,7 @@ export default function CartPage() {
                       animate={{ opacity: 1, x: 0, height: 'auto' }}
                       exit={{ opacity: 0, x: 30, height: 0, marginBottom: 0 }}
                       transition={{ type: 'spring', damping: 25, stiffness: 250 }}
-                      className="flex gap-4 p-4 group"
-                      style={{
-                        background: 'rgba(255,255,255,0.02)',
-                        border: '1px solid rgba(255,255,255,0.05)',
-                        borderRadius: '3px',
-                      }}
+                      className="flex gap-4 p-4 group bg-black/5 dark:bg-white/[0.02] border border-black/5 dark:border-white/[0.05] rounded-sm"
                     >
                       {/* Image */}
                       <div className="relative w-20 h-24 flex-shrink-0 overflow-hidden" style={{ borderRadius: '2px' }}>
@@ -335,32 +308,28 @@ export default function CartPage() {
                         <div>
                           <div className="flex items-start justify-between gap-2">
                             <div>
-                              <h3 className="text-lg text-white leading-tight"
-                                  style={{ fontFamily: "'Bebas Neue', Impact, sans-serif", letterSpacing: '0.05em' }}>
+                              <h3 className="text-lg text-black dark:text-white leading-tight font-display tracking-[0.05em]">
                                 {item.name}
                               </h3>
-                              <p className="text-[10px] text-white/30 mt-0.5"
-                                  style={{ fontFamily: "'Space Mono', monospace" }}>
+                              <p className="text-[10px] text-black/50 dark:text-white/30 mt-0.5 font-mono">
                                 {item.category}
                               </p>
                             </div>
                             <motion.button
                               whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
                               onClick={() => removeItem(item.id, item.size)}
-                              className="p-1.5 text-white/20 hover:text-red-400 transition-colors flex-shrink-0"
+                              className="p-1.5 text-black/30 dark:text-white/20 hover:text-red-500 dark:hover:text-red-400 transition-colors flex-shrink-0"
                             >
                               <Trash2 size={13} />
                             </motion.button>
                           </div>
 
                           <div className="flex gap-2 mt-2">
-                            <span className="text-[10px] border border-white/10 px-2 py-0.5 text-white/40"
-                                  style={{ fontFamily: "'Space Mono', monospace", borderRadius: '1px' }}>
+                            <span className="text-[10px] border border-black/10 dark:border-white/10 px-2 py-0.5 text-black/60 dark:text-white/40 font-mono rounded-sm">
                               TAM: {item.size}
                             </span>
                             {item.color && (
-                              <span className="text-[10px] border border-white/10 px-2 py-0.5 text-white/40 truncate"
-                                    style={{ fontFamily: "'Space Mono', monospace", borderRadius: '1px' }}>
+                              <span className="text-[10px] border border-black/10 dark:border-white/10 px-2 py-0.5 text-black/60 dark:text-white/40 truncate font-mono rounded-sm">
                                 {item.color}
                               </span>
                             )}
@@ -369,29 +338,22 @@ export default function CartPage() {
 
                         <div className="flex items-center justify-between mt-3">
                           {/* Qty */}
-                          <div className="flex items-center gap-1 border border-white/10"
-                               style={{ borderRadius: '2px', background: 'rgba(255,255,255,0.02)' }}>
+                          <div className="flex items-center gap-1 border border-black/10 dark:border-white/10 rounded-sm bg-black/5 dark:bg-white/[0.02]">
                             <button onClick={() => updateQty(item.id, item.size, item.quantity - 1)}
-                                    className="w-8 h-8 flex items-center justify-center text-white/30 hover:text-white transition-colors">
+                                    className="w-8 h-8 flex items-center justify-center text-black/50 dark:text-white/30 hover:text-black dark:hover:text-white transition-colors">
                               <Minus size={10} />
                             </button>
-                            <span className="w-8 text-center text-sm text-white"
-                                  style={{ fontFamily: "'Space Mono', monospace" }}>
+                            <span className="w-8 text-center text-sm text-black dark:text-white font-mono">
                               {item.quantity}
                             </span>
                             <button onClick={() => updateQty(item.id, item.size, item.quantity + 1)}
-                                    className="w-8 h-8 flex items-center justify-center text-white/30 hover:text-fire-orange transition-colors">
+                                    className="w-8 h-8 flex items-center justify-center text-black/50 dark:text-white/30 hover:text-fire-orange transition-colors">
                               <Plus size={10} />
                             </button>
                           </div>
 
                           {/* Price */}
-                          <span className="text-xl"
-                                style={{
-                                  fontFamily: "'Bebas Neue', Impact, sans-serif",
-                                  background: 'linear-gradient(135deg, #FF4500, #FFA500)',
-                                  WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text',
-                                }}>
+                          <span className="text-xl font-display text-transparent bg-clip-text bg-gradient-to-br from-[#FF4500] to-[#FFA500]">
                             {formatCurrency(item.price * item.quantity)}
                           </span>
                         </div>
@@ -409,8 +371,7 @@ export default function CartPage() {
               <SectionTitle step={2}>Calcular Frete</SectionTitle>
               <div className="flex gap-3">
                 <div className="flex-1 relative">
-                  <label className="block text-[10px] tracking-[0.2em] uppercase mb-1.5 text-white/30"
-                         style={{ fontFamily: "'Space Mono', monospace" }}>
+                  <label className="block text-[10px] tracking-[0.2em] uppercase mb-1.5 text-black/50 dark:text-white/30 font-mono">
                     CEP
                   </label>
                   <input
@@ -418,13 +379,7 @@ export default function CartPage() {
                     onChange={(e) => handleInputChange('cep', e.target.value)}
                     placeholder="00000-000"
                     maxLength={9}
-                    className="w-full px-4 py-3 bg-transparent text-white placeholder-white/20 outline-none"
-                    style={{
-                      fontFamily: "'Space Mono', monospace",
-                      border: '1px solid rgba(255,255,255,0.08)',
-                      borderRadius: '2px',
-                      background: 'rgba(255,255,255,0.02)',
-                    }}
+                    className="w-full px-4 py-3 bg-transparent text-black dark:text-white placeholder-black/30 dark:placeholder-white/20 outline-none font-mono border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/[0.02] rounded-sm"
                     onKeyDown={(e) => e.key === 'Enter' && calcShipping()}
                   />
                   {loadingCep && (
@@ -438,16 +393,8 @@ export default function CartPage() {
                     whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}
                     onClick={() => calcShipping()}
                     disabled={loadingCep}
-                    className="px-5 py-3 font-bold uppercase tracking-widest text-sm transition-all"
-                    style={{
-                      background: 'linear-gradient(135deg, #FF0000, #FF4500, #FFA500)',
-                      borderRadius: '2px',
-                      fontFamily: "'Barlow Condensed', system-ui, sans-serif",
-                      fontWeight: 700,
-                      letterSpacing: '0.15em',
-                      color: 'black',
-                      opacity: loadingCep ? 0.7 : 1,
-                    }}
+                    className="px-5 py-3 font-body font-bold uppercase tracking-[0.15em] text-sm transition-all rounded-sm bg-gradient-to-br from-[#FF0000] via-[#FF4500] to-[#FFA500] text-black"
+                    style={{ opacity: loadingCep ? 0.7 : 1 }}
                   >
                     {loadingCep ? '...' : 'Calcular'}
                   </motion.button>
@@ -461,24 +408,13 @@ export default function CartPage() {
                     initial={{ opacity: 0, y: -8, height: 0 }}
                     animate={{ opacity: 1, y: 0, height: 'auto' }}
                     exit={{ opacity: 0, y: -8, height: 0 }}
-                    className="mt-3 flex items-center gap-3 px-4 py-3 overflow-hidden"
-                    style={{
-                      background: 'rgba(255,69,0,0.05)',
-                      border: '1px solid rgba(255,69,0,0.15)',
-                      borderRadius: '2px',
-                    }}
+                    className="mt-3 flex items-center gap-3 px-4 py-3 overflow-hidden bg-fire-orange/10 border border-fire-orange/20 rounded-sm"
                   >
-                    <Truck size={14} style={{ color: '#FF4500', flexShrink: 0 }} />
-                    <span className="text-sm text-white/60"
-                          style={{ fontFamily: "'Barlow Condensed', system-ui, sans-serif" }}>
+                    <Truck size={14} className="text-fire-orange flex-shrink-0" />
+                    <span className="text-sm text-black/60 dark:text-white/60 font-body">
                       {shipping.label} — entrega em {shipping.days} dias úteis
                     </span>
-                    <span className="ml-auto font-bold"
-                          style={{
-                            fontFamily: "'Space Mono', monospace",
-                            color: shipping.price === 0 ? '#4ade80' : '#FF4500',
-                            fontSize: '0.85rem',
-                          }}>
+                    <span className={`ml-auto font-bold font-mono text-[0.85rem] ${shipping.price === 0 ? 'text-green-500 dark:text-green-400' : 'text-fire-orange'}`}>
                       {shipping.price === 0 ? 'GRÁTIS' : formatCurrency(shipping.price)}
                     </span>
                   </motion.div>
@@ -526,20 +462,14 @@ export default function CartPage() {
                     <button
                       key={method}
                       onClick={() => setPayMethod(method)}
-                      className="flex-1 min-w-[130px] py-4 px-3 text-center transition-all duration-200"
-                      style={{
-                        border: isSelected ? '1px solid #FF4500' : '1px solid rgba(255,255,255,0.08)',
-                        background: isSelected ? 'rgba(255,69,0,0.8)' : 'rgba(255,255,255,0.02)',
-                        boxShadow: isSelected ? '0 0 16px rgba(255,69,0,0.2)' : 'none',
-                        borderRadius: '2px',
-                      }}
+                      className={`flex-1 min-w-[130px] py-4 px-3 text-center transition-all duration-200 rounded-sm border ${
+                        isSelected ? 'border-fire-orange bg-fire-orange/20 drop-shadow-fire-sm' : 'border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/[0.02]'
+                      }`}
                     >
-                      <p className="text-sm font-bold text-white"
-                         style={{ fontFamily: "'Barlow Condensed', system-ui, sans-serif", fontWeight: 700 }}>
+                      <p className="text-sm font-bold font-body text-black dark:text-white">
                         {labels[method]}
                       </p>
-                      <p className="text-[10px] mt-1"
-                         style={{ fontFamily: "'Space Mono', monospace", color: isSelected ? '#FF4500' : 'rgba(255,255,255,0.2)' }}>
+                      <p className={`text-[10px] mt-1 font-mono ${isSelected ? 'text-fire-orange' : 'text-black/40 dark:text-white/20'}`}>
                         {subs[method]}
                       </p>
                     </button>
@@ -566,17 +496,15 @@ export default function CartPage() {
                 <motion.div
                   initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }}
                   transition={{ duration: 0.3 }}
-                  className="mt-4 p-6 text-center overflow-hidden"
-                  style={{ border: '1px solid rgba(255,255,255,0.05)', borderRadius: '2px', background: 'rgba(255,255,255,0.02)' }}
+                  className="mt-4 p-6 text-center overflow-hidden border border-black/5 dark:border-white/[0.05] rounded-sm bg-black/5 dark:bg-white/[0.02]"
                 >
-                  <div className="w-24 h-24 mx-auto mb-4 flex items-center justify-center"
-                       style={{ border: '2px solid rgba(255,69,0,0.3)', borderRadius: '4px', background: 'rgba(255,69,0,0.05)' }}>
+                  <div className="w-24 h-24 mx-auto mb-4 flex items-center justify-center border-2 border-fire-orange/30 rounded-md bg-fire-orange/10">
                     <span className="text-3xl">⚡</span>
                   </div>
-                  <p className="text-sm text-white/50" style={{ fontFamily: "'Barlow Condensed', system-ui, sans-serif" }}>
+                  <p className="text-sm text-black/60 dark:text-white/50 font-body">
                     O QR Code PIX será gerado após confirmar o pedido.
                   </p>
-                  <p className="text-xs mt-1 text-green-400/60" style={{ fontFamily: "'Space Mono', monospace" }}>
+                  <p className="text-xs mt-1 text-green-600 dark:text-green-400/80 font-mono">
                     5% de desconto aplicado automaticamente
                   </p>
                 </motion.div>
@@ -589,34 +517,25 @@ export default function CartPage() {
             initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.6, delay: 0.15 }}
             className="self-start lg:sticky lg:top-28 max-h-[calc(100vh-120px)] overflow-y-auto custom-scrollbar"
           >
-            <div className="p-6 space-y-5"
-                 style={{
-                   background: 'rgba(255,255,255,0.02)',
-                   border: '1px solid rgba(255,255,255,0.06)',
-                   borderRadius: '4px',
-                 }}>
+            <div className="p-6 space-y-5 bg-black/5 dark:bg-white/[0.02] border border-black/10 dark:border-white/[0.06] rounded-sm">
 
               {/* Fire top border */}
-              <div className="h-px -mx-6 -mt-6 mb-0"
-                   style={{ background: 'linear-gradient(90deg, #FF0000, #FF4500, #FFA500, transparent)' }} />
+              <div className="h-px -mx-6 -mt-6 mb-0 bg-gradient-to-r from-[#FF0000] via-[#FF4500] to-transparent" />
 
-              <h3 className="text-xl pt-1"
-                  style={{ fontFamily: "'Bebas Neue', Impact, sans-serif", letterSpacing: '0.1em' }}>
+              <h3 className="text-xl pt-1 font-display tracking-[0.1em] text-black dark:text-white">
                 RESUMO DO PEDIDO
               </h3>
 
               {/* Item count */}
-              <div className="flex justify-between text-sm text-white/40"
-                   style={{ fontFamily: "'Space Mono', monospace", fontSize: '0.7rem' }}>
+              <div className="flex justify-between text-sm text-black/50 dark:text-white/40 font-mono text-[0.7rem]">
                 <span>Itens ({items.reduce((a, i) => a + i.quantity, 0)})</span>
                 <span>{formatCurrency(subtotal)}</span>
               </div>
 
               {/* Shipping */}
-              <div className="flex justify-between text-sm"
-                   style={{ fontFamily: "'Space Mono', monospace", fontSize: '0.7rem' }}>
-                <span className="text-white/40">Frete</span>
-                <span className={shippingCost === 0 ? 'text-green-400' : shippingCost === null ? 'text-white/20' : 'text-white/70'}>
+              <div className="flex justify-between text-sm font-mono text-[0.7rem]">
+                <span className="text-black/50 dark:text-white/40">Frete</span>
+                <span className={shippingCost === 0 ? 'text-green-500 dark:text-green-400' : shippingCost === null ? 'text-black/30 dark:text-white/20' : 'text-black/80 dark:text-white/70'}>
                   {shippingCost === null ? '—' : shippingCost === 0 ? 'GRÁTIS' : formatCurrency(shippingCost)}
                 </span>
               </div>
@@ -624,15 +543,13 @@ export default function CartPage() {
               {/* Free shipping progress */}
               {subtotal < 299 && (
                 <div>
-                  <div className="flex justify-between text-[10px] text-white/20 mb-1.5"
-                       style={{ fontFamily: "'Space Mono', monospace" }}>
+                  <div className="flex justify-between text-[10px] text-black/40 dark:text-white/20 mb-1.5 font-mono">
                     <span>Faltam {formatCurrency(299 - subtotal)} para frete grátis</span>
                     <span>{Math.round((subtotal / 299) * 100)}%</span>
                   </div>
-                  <div className="h-1 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.06)' }}>
+                  <div className="h-1 rounded-full overflow-hidden bg-black/10 dark:bg-white/[0.06]">
                     <motion.div
-                      className="h-full origin-left"
-                      style={{ background: 'linear-gradient(90deg, #FF0000, #FF4500, #FFA500)' }}
+                      className="h-full origin-left bg-gradient-to-r from-[#FF0000] via-[#FF4500] to-[#FFA500]"
                       initial={{ scaleX: 0 }}
                       animate={{ scaleX: Math.min(subtotal / 299, 1) }}
                       transition={{ duration: 0.8, ease: 'easeOut' }}
@@ -642,39 +559,30 @@ export default function CartPage() {
               )}
 
               {/* Divider */}
-              <div className="h-px" style={{ background: 'rgba(255,255,255,0.05)' }} />
+              <div className="h-px bg-black/5 dark:bg-white/[0.05]" />
 
               {/* Coupon Field */}
               <div className="pt-2">
-                <label className="block text-[9px] tracking-[0.2em] uppercase mb-1.5 text-white/20"
-                       style={{ fontFamily: "'Space Mono', monospace" }}>
+                <label className="block text-[9px] tracking-[0.2em] uppercase mb-1.5 text-black/40 dark:text-white/20 font-mono">
                   CUPOM DE DESCONTO
                 </label>
                 <input
                   value={coupon}
                   onChange={(e) => setCoupon(e.target.value)}
                   placeholder="CUPOM"
-                  className="w-full px-3 py-2 bg-transparent text-white placeholder-white/10 text-xs outline-none border border-white/5 focus:border-fire-orange/40 transition-all"
-                  style={{ fontFamily: "'Space Mono', monospace", borderRadius: '2px' }}
+                  className="w-full px-3 py-2 bg-transparent text-black dark:text-white placeholder-black/30 dark:placeholder-white/20 text-xs outline-none border border-black/10 dark:border-white/10 focus:border-fire-orange/40 transition-all font-mono rounded-sm"
                 />
               </div>
 
               {/* Divider */}
-              <div className="h-px" style={{ background: 'rgba(255,255,255,0.05)' }} />
+              <div className="h-px bg-black/5 dark:bg-white/[0.05]" />
 
               {/* Total */}
               <div className="flex justify-between items-end">
-                <span className="text-white/50 text-sm" style={{ fontFamily: "'Space Mono', monospace", fontSize: '0.7rem' }}>
+                <span className="text-black/60 dark:text-white/50 text-sm font-mono text-[0.7rem]">
                   TOTAL
                 </span>
-                <span className="text-3xl"
-                      style={{
-                        fontFamily: "'Bebas Neue', Impact, sans-serif",
-                        letterSpacing: '0.05em',
-                        background: 'linear-gradient(135deg, #FF0000, #FF4500, #FFA500)',
-                        WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text',
-                        filter: 'drop-shadow(0 0 10px rgba(255,69,0,0.3))',
-                      }}>
+                <span className="text-3xl font-display tracking-[0.05em] text-transparent bg-clip-text bg-gradient-to-br from-[#FF0000] via-[#FF4500] to-[#FFA500] drop-shadow-[0_0_10px_rgba(255,69,0,0.3)]">
                   {formatCurrency(shippingCost !== null ? total : subtotal)}
                 </span>
               </div>
@@ -685,15 +593,7 @@ export default function CartPage() {
                 disabled={!isFormValid() || loadingOrder}
                 whileHover={isFormValid() ? { scale: 1.02, y: -1 } : {}}
                 whileTap={isFormValid() ? { scale: 0.98 } : {}}
-                className={`w-full py-4 flex items-center justify-center gap-3 font-bold uppercase tracking-widest relative overflow-hidden transition-all duration-300 ${!isFormValid() || loadingOrder ? 'opacity-40 grayscale' : ''}`}
-                style={{
-                  background: 'linear-gradient(135deg, #FF0000 0%, #FF4500 50%, #FFA500 100%)',
-                  borderRadius: '2px',
-                  fontFamily: "'Barlow Condensed', system-ui, sans-serif",
-                  fontWeight: 800,
-                  letterSpacing: '0.18em',
-                  color: 'black',
-                }}
+                className={`w-full py-4 flex items-center justify-center gap-3 font-body font-extrabold uppercase tracking-[0.18em] rounded-sm relative overflow-hidden transition-all duration-300 bg-gradient-to-br from-[#FF0000] via-[#FF4500] to-[#FFA500] text-black ${!isFormValid() || loadingOrder ? 'opacity-40 grayscale' : ''}`}
               >
                 {isFormValid() && !loadingOrder && (
                   <motion.div
@@ -716,8 +616,8 @@ export default function CartPage() {
 
               {/* Security badges */}
               <div className="flex items-center justify-center gap-2 pt-1">
-                <Lock size={10} className="text-white/20" />
-                <span className="text-[9px] text-white/20" style={{ fontFamily: "'Space Mono', monospace" }}>
+                <Lock size={10} className="text-black/30 dark:text-white/20" />
+                <span className="text-[9px] text-black/40 dark:text-white/20 font-mono">
                   SSL · 256-bit · Compra 100% Segura
                 </span>
               </div>

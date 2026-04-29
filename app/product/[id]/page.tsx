@@ -9,8 +9,9 @@ import {
   ArrowLeft, ShoppingBag, Zap, Shield, RefreshCw,
   Truck, ChevronDown, Star, Flame,
 } from 'lucide-react';
-import { getProductById, products } from '@/data/products';
+import { getProductById, products, type Product } from '@/data/products';
 import { useCart } from '@/store/useCart';
+import { supabase } from '@/lib/supabase';
 import { fireToast } from '@/components/ToastVFX';
 import Navbar from '@/components/Navbar';
 import CartSidebar from '@/components/CartSidebar';
@@ -91,25 +92,60 @@ function RelatedStrip({ currentId }: { currentId: string }) {
 
 /* ─── Page ─────────────────────────────────────────────── */
 export default function ProductPage({ params }: { params: { id: string } }) {
-  const product = getProductById(params.id);
-  if (!product) notFound();
+  const [product, setProduct] = useState<Product | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchProduct() {
+      const p = getProductById(params.id);
+      if (p) {
+        setProduct(p);
+        setLoading(false);
+        return;
+      }
+      const { data, error } = await supabase.from('products').select('*').eq('id', params.id).single();
+      if (data && !error) {
+        const mapped = {
+          ...data,
+          colors: (data.colors || []).map((c: string) => {
+            const [name, hex] = c.split('|');
+            return { name: name || 'Padrão', hex: hex || '#000000' };
+          }),
+          sizes: data.sizes || [],
+          features: data.features || [],
+          subtitle: data.subtitle || '',
+          stock: data.stock || 0,
+        } as Product;
+        setProduct(mapped);
+      }
+      setLoading(false);
+    }
+    fetchProduct();
+  }, [params.id]);
 
   const [activeImg, setActiveImg]     = useState(0);
-  const [selectedSize, setSelectedSize] = useState(product.sizes[1] ?? product.sizes[0]);
+  const [selectedSize, setSelectedSize] = useState('');
   const [selectedColor, setSelectedColor] = useState(0);
+
+  useEffect(() => {
+    if (product && product.sizes && !selectedSize) {
+      setSelectedSize(product.sizes[1] ?? product.sizes[0]);
+    }
+  }, [product, selectedSize]);
   const [qty, setQty]                 = useState(1);
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [adding, setAdding]           = useState(false);
 
   const { addItem } = useCart();
 
-  const gallery = [product.image, ...GALLERY_EXTRAS.slice(0, 2)];
+  const gallery = product ? [product.image, ...GALLERY_EXTRAS.slice(0, 2)] : [];
 
-  const discount = product.originalPrice
+  const discount = product && product.originalPrice
     ? Math.round((1 - product.price / product.originalPrice) * 100)
     : null;
 
   const handleAdd = async () => {
+    if (!product) return;
     setAdding(true);
     addItem({
       id: product.id,
@@ -135,8 +171,11 @@ export default function ProductPage({ params }: { params: { id: string } }) {
     return () => window.removeEventListener('keydown', handler);
   }, [gallery.length]);
 
+  if (loading) return <div className="min-h-screen bg-white dark:bg-black" />;
+  if (!product) return notFound();
+
   return (
-    <main className="min-h-screen bg-black">
+    <main className="min-h-screen bg-white dark:bg-black">
       <Navbar />
       <CartSidebar />
 
@@ -151,8 +190,7 @@ export default function ProductPage({ params }: { params: { id: string } }) {
         <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.4 }}>
           <Link
             href="/#produtos"
-            className="inline-flex items-center gap-2 text-white/30 hover:text-white transition-colors mb-10 group"
-            style={{ fontFamily: "'Space Mono', monospace", fontSize: '0.7rem', letterSpacing: '0.2em' }}
+            className="inline-flex items-center gap-2 text-black/50 dark:text-white/30 hover:text-black dark:hover:text-white transition-colors mb-10 group font-mono text-[0.7rem] tracking-[0.2em]"
           >
             <ArrowLeft size={12} className="group-hover:-translate-x-1 transition-transform" />
             VOLTAR AOS DROPS
@@ -168,12 +206,7 @@ export default function ProductPage({ params }: { params: { id: string } }) {
               initial={{ opacity: 0, scale: 0.96 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-              className="relative overflow-hidden aspect-[3/4] group"
-              style={{
-                background: '#0d0d0d',
-                borderRadius: '4px',
-                border: '1px solid rgba(255,255,255,0.05)',
-              }}
+              className="relative overflow-hidden aspect-[3/4] group bg-black/5 dark:bg-[#0d0d0d] rounded-[4px] border border-black/10 dark:border-white/[0.05]"
             >
               <AnimatePresence mode="wait">
                 <motion.div
@@ -195,15 +228,13 @@ export default function ProductPage({ params }: { params: { id: string } }) {
               </AnimatePresence>
 
               {/* Gradient overlay */}
-              <div className="absolute inset-0 pointer-events-none"
-                   style={{ background: 'linear-gradient(180deg, transparent 60%, rgba(0,0,0,0.5) 100%)' }} />
+              <div className="absolute inset-0 pointer-events-none bg-gradient-to-t from-black/50 dark:from-black/80 via-transparent to-transparent" />
 
               {/* Tag */}
               {product.tag && (
                 <div className="absolute top-4 left-4 clip-badge px-3 py-1"
                      style={{ background: product.tagColor ?? '#FF0000' }}>
-                  <span className="text-[10px] font-bold text-black tracking-widest"
-                        style={{ fontFamily: "'Space Mono', monospace" }}>
+                  <span className="text-[10px] font-bold text-black tracking-widest font-mono">
                     {product.tag}
                   </span>
                 </div>
@@ -230,17 +261,12 @@ export default function ProductPage({ params }: { params: { id: string } }) {
                 <button
                   key={i}
                   onClick={() => setActiveImg(i)}
-                  className="relative overflow-hidden flex-1 aspect-square transition-all duration-200"
-                  style={{
-                    borderRadius: '3px',
-                    border: activeImg === i
-                      ? '1px solid #FF4500'
-                      : '1px solid rgba(255,255,255,0.07)',
-                    boxShadow: activeImg === i ? '0 0 12px rgba(255,69,0,0.4)' : 'none',
-                  }}
+                  className={`relative overflow-hidden flex-1 aspect-square transition-all duration-200 rounded-[3px] border ${
+                    activeImg === i ? 'border-fire-orange drop-shadow-fire-sm' : 'border-black/10 dark:border-white/[0.07]'
+                  }`}
                 >
                   <Image src={img} alt={`Vista ${i + 1}`} fill className="object-cover object-top" />
-                  {activeImg !== i && <div className="absolute inset-0 bg-black/40" />}
+                  {activeImg !== i && <div className="absolute inset-0 bg-black/10 dark:bg-black/40" />}
                 </button>
               ))}
             </div>
@@ -255,67 +281,40 @@ export default function ProductPage({ params }: { params: { id: string } }) {
           >
             {/* Category + rating */}
             <div className="flex items-center justify-between">
-              <span className="text-[10px] tracking-[0.35em] uppercase"
-                    style={{ fontFamily: "'Space Mono', monospace", color: '#FF4500' }}>
+              <span className="text-[10px] tracking-[0.35em] uppercase font-mono text-fire-orange">
                 {product.category}
               </span>
               <div className="flex items-center gap-1.5">
                 {[...Array(5)].map((_, i) => (
-                  <Star key={i} size={10} fill={i < 4 ? '#FFA500' : 'none'} stroke={i < 4 ? '#FFA500' : '#ffffff22'} />
+                  <Star key={i} size={10} className={i < 4 ? 'text-fire-amber fill-fire-amber' : 'text-black/10 dark:text-white/20 fill-transparent'} stroke="currentColor" />
                 ))}
-                <span className="text-[10px] text-white/20 ml-1"
-                      style={{ fontFamily: "'Space Mono', monospace" }}>(127)</span>
+                <span className="text-[10px] text-black/40 dark:text-white/20 ml-1 font-mono">(127)</span>
               </div>
             </div>
 
             {/* Name */}
             <div>
-              <h1 className="leading-none"
-                  style={{
-                    fontFamily: "'Bebas Neue', Impact, sans-serif",
-                    fontSize: 'clamp(2.5rem, 6vw, 4.5rem)',
-                    letterSpacing: '0.04em',
-                  }}>
-                <span style={{
-                  background: 'linear-gradient(135deg, #fff 0%, rgba(255,255,255,0.7) 100%)',
-                  WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text',
-                }}>
+              <h1 className="leading-none font-display text-[clamp(2.5rem,6vw,4.5rem)] tracking-[0.04em]">
+                <span className="text-black/90 dark:text-transparent dark:bg-clip-text dark:bg-gradient-to-br dark:from-white dark:to-white/70">
                   {product.name}
                 </span>
               </h1>
-              <p className="mt-2 text-white/40"
-                 style={{ fontFamily: "'Barlow Condensed', system-ui, sans-serif", fontSize: '1rem' }}>
+              <p className="mt-2 text-black/50 dark:text-white/40 font-body text-[1rem]">
                 {product.subtitle}
               </p>
             </div>
 
             {/* Price block */}
             <div className="flex items-end gap-4">
-              <span style={{
-                fontFamily: "'Bebas Neue', Impact, sans-serif",
-                fontSize: '2.8rem',
-                letterSpacing: '0.03em',
-                background: 'linear-gradient(135deg, #FF0000, #FF4500, #FFA500)',
-                WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text',
-                filter: 'drop-shadow(0 0 16px rgba(255,34,0,0.35))',
-                lineHeight: 1,
-              }}>
+              <span className="font-display text-[2.8rem] tracking-[0.03em] leading-none text-transparent bg-clip-text bg-gradient-to-br from-[#FF0000] via-[#FF4500] to-[#FFA500] drop-shadow-[0_0_16px_rgba(255,34,0,0.35)]">
                 {fmt(product.price)}
               </span>
               {product.originalPrice && (
                 <div className="pb-1">
-                  <span className="text-white/25 line-through text-lg"
-                        style={{ fontFamily: "'Space Mono', monospace" }}>
+                  <span className="text-black/30 dark:text-white/25 line-through text-lg font-mono">
                     {fmt(product.originalPrice)}
                   </span>
-                  <span className="ml-2 text-xs px-2 py-0.5"
-                        style={{
-                          background: 'rgba(255,0,0,0.15)',
-                          border: '1px solid rgba(255,0,0,0.3)',
-                          color: '#FF4500',
-                          fontFamily: "'Space Mono', monospace",
-                          borderRadius: '2px',
-                        }}>
+                  <span className="ml-2 text-xs px-2 py-0.5 font-mono text-fire-orange bg-fire-orange/10 border border-fire-orange/30 rounded-sm">
                     -{discount}%
                   </span>
                 </div>
@@ -323,19 +322,17 @@ export default function ProductPage({ params }: { params: { id: string } }) {
             </div>
 
             {/* Installments note */}
-            <p className="text-xs text-white/25 -mt-3"
-               style={{ fontFamily: "'Space Mono', monospace" }}>
+            <p className="text-xs text-black/40 dark:text-white/25 -mt-3 font-mono">
               ou 12x de {fmt(product.price / 12)} sem juros
             </p>
 
             {/* Divider */}
-            <div className="h-px" style={{ background: 'linear-gradient(90deg, #FF450022, rgba(255,255,255,0.04), transparent)' }} />
+            <div className="h-px bg-gradient-to-r from-fire-orange/20 via-black/5 dark:via-white/[0.04] to-transparent" />
 
             {/* Color selector */}
             <div>
-              <p className="text-[10px] tracking-[0.25em] uppercase mb-3 text-white/40"
-                 style={{ fontFamily: "'Space Mono', monospace" }}>
-                Cor — <span className="text-white/70">{product.colors[selectedColor]?.name}</span>
+              <p className="text-[10px] tracking-[0.25em] uppercase mb-3 text-black/50 dark:text-white/40 font-mono">
+                Cor — <span className="text-black/80 dark:text-white/70">{product.colors[selectedColor]?.name}</span>
               </p>
               <div className="flex gap-2">
                 {product.colors.map((c, i) => (
@@ -343,16 +340,10 @@ export default function ProductPage({ params }: { params: { id: string } }) {
                     key={c.hex}
                     onClick={() => setSelectedColor(i)}
                     title={c.name}
-                    className="w-8 h-8 transition-all duration-200"
-                    style={{
-                      background: c.hex,
-                      borderRadius: '2px',
-                      border: selectedColor === i
-                        ? '2px solid #FF4500'
-                        : '2px solid rgba(255,255,255,0.1)',
-                      boxShadow: selectedColor === i ? '0 0 12px rgba(255,69,0,0.5)' : 'none',
-                      transform: selectedColor === i ? 'scale(1.15)' : 'scale(1)',
-                    }}
+                    className={`w-8 h-8 transition-all duration-200 rounded-sm ${
+                      selectedColor === i ? 'border-2 border-fire-orange scale-110 drop-shadow-fire-sm' : 'border-2 border-black/10 dark:border-white/10 scale-100'
+                    }`}
+                    style={{ background: c.hex }}
                   />
                 ))}
               </div>
@@ -361,12 +352,10 @@ export default function ProductPage({ params }: { params: { id: string } }) {
             {/* Size selector */}
             <div>
               <div className="flex items-center justify-between mb-3">
-                <p className="text-[10px] tracking-[0.25em] uppercase text-white/40"
-                   style={{ fontFamily: "'Space Mono', monospace" }}>
-                  Tamanho — <span className="text-white/70">{selectedSize}</span>
+                <p className="text-[10px] tracking-[0.25em] uppercase text-black/50 dark:text-white/40 font-mono">
+                  Tamanho — <span className="text-black/80 dark:text-white/70">{selectedSize}</span>
                 </p>
-                <button className="text-[10px] underline text-white/20 hover:text-white/50 transition-colors"
-                        style={{ fontFamily: "'Space Mono', monospace" }}>
+                <button className="text-[10px] underline text-black/40 dark:text-white/20 hover:text-black/70 dark:hover:text-white/50 transition-colors font-mono">
                   Guia de Tamanhos
                 </button>
               </div>
@@ -379,16 +368,9 @@ export default function ProductPage({ params }: { params: { id: string } }) {
                       onClick={() => setSelectedSize(sz)}
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
-                      className="min-w-[52px] py-2.5 text-center text-[11px] font-bold transition-all duration-200"
-                      style={{
-                        fontFamily: "'Space Mono', monospace",
-                        borderRadius: '2px',
-                        border: isSelected ? '1px solid #FF4500' : '1px solid rgba(255,255,255,0.1)',
-                        background: isSelected ? 'rgba(255,69,0,0.12)' : 'rgba(255,255,255,0.02)',
-                        color: isSelected ? '#FF4500' : 'rgba(255,255,255,0.4)',
-                        boxShadow: isSelected ? '0 0 16px rgba(255,69,0,0.3), inset 0 0 12px rgba(255,69,0,0.05)' : 'none',
-                        textShadow: isSelected ? '0 0 8px rgba(255,69,0,0.8)' : 'none',
-                      }}
+                      className={`min-w-[52px] py-2.5 text-center text-[11px] font-bold transition-all duration-200 font-mono rounded-sm ${
+                        isSelected ? 'border border-fire-orange bg-fire-orange/10 text-fire-orange drop-shadow-fire-sm' : 'border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/[0.02] text-black/50 dark:text-white/40'
+                      }`}
                     >
                       {sz}
                     </motion.button>
@@ -400,18 +382,16 @@ export default function ProductPage({ params }: { params: { id: string } }) {
             {/* Qty + CTA */}
             <div className="flex gap-3">
               {/* Qty control */}
-              <div className="flex items-center border border-white/10"
-                   style={{ background: 'rgba(255,255,255,0.02)', borderRadius: '2px' }}>
+              <div className="flex items-center border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/[0.02] rounded-sm">
                 <button onClick={() => setQty((q) => Math.max(1, q - 1))}
-                        className="w-10 h-full flex items-center justify-center text-white/30 hover:text-white transition-colors text-lg">
+                        className="w-10 h-full flex items-center justify-center text-black/50 dark:text-white/30 hover:text-black dark:hover:text-white transition-colors text-lg">
                   −
                 </button>
-                <span className="w-10 text-center text-sm text-white"
-                      style={{ fontFamily: "'Space Mono', monospace" }}>
+                <span className="w-10 text-center text-sm text-black dark:text-white font-mono">
                   {qty}
                 </span>
                 <button onClick={() => setQty((q) => q + 1)}
-                        className="w-10 h-full flex items-center justify-center text-white/30 hover:text-white transition-colors text-lg">
+                        className="w-10 h-full flex items-center justify-center text-black/50 dark:text-white/30 hover:text-black dark:hover:text-white transition-colors text-lg">
                   +
                 </button>
               </div>
@@ -422,19 +402,9 @@ export default function ProductPage({ params }: { params: { id: string } }) {
                 disabled={adding}
                 whileHover={{ scale: adding ? 1 : 1.02, y: adding ? 0 : -1 }}
                 whileTap={{ scale: 0.98 }}
-                className="flex-1 flex items-center justify-center gap-3 py-4 font-bold uppercase tracking-widest relative overflow-hidden"
-                style={{
-                  fontFamily: "'Barlow Condensed', system-ui, sans-serif",
-                  fontWeight: 800,
-                  letterSpacing: '0.18em',
-                  fontSize: '0.95rem',
-                  borderRadius: '2px',
-                  background: adding
-                    ? 'linear-gradient(135deg, #FF4500, #FF0000)'
-                    : 'linear-gradient(135deg, #FF0000 0%, #FF4500 50%, #FFA500 100%)',
-                  boxShadow: adding ? '0 0 30px rgba(255,69,0,0.5)' : 'none',
-                  transition: 'all 0.3s ease',
-                }}
+                className={`flex-1 flex items-center justify-center gap-3 py-4 font-body font-extrabold uppercase tracking-[0.18em] text-[0.95rem] rounded-sm relative overflow-hidden text-black ${
+                  adding ? 'bg-gradient-to-br from-[#FF4500] to-[#FF0000] drop-shadow-fire-md' : 'bg-gradient-to-br from-[#FF0000] via-[#FF4500] to-[#FFA500]'
+                }`}
               >
                 {/* Shimmer */}
                 {!adding && (
@@ -470,15 +440,12 @@ export default function ProductPage({ params }: { params: { id: string } }) {
                 { icon: <Shield size={13} />, label: 'Compra Segura', sub: '100% protegida' },
               ].map((b) => (
                 <div key={b.label}
-                     className="flex flex-col items-center gap-1 py-3 text-center border border-white/[0.05]"
-                     style={{ background: 'rgba(255,255,255,0.02)', borderRadius: '2px' }}>
-                  <span style={{ color: '#FF4500' }}>{b.icon}</span>
-                  <span className="text-[10px] text-white/60 leading-tight"
-                        style={{ fontFamily: "'Barlow Condensed', system-ui, sans-serif", fontWeight: 700 }}>
+                     className="flex flex-col items-center gap-1 py-3 text-center border border-black/5 dark:border-white/[0.05] bg-black/[0.02] dark:bg-white/[0.02] rounded-sm">
+                  <span className="text-fire-orange">{b.icon}</span>
+                  <span className="text-[10px] text-black/70 dark:text-white/60 leading-tight font-body font-bold">
                     {b.label}
                   </span>
-                  <span className="text-[9px] text-white/20"
-                        style={{ fontFamily: "'Space Mono', monospace" }}>
+                  <span className="text-[9px] text-black/40 dark:text-white/20 font-mono">
                     {b.sub}
                   </span>
                 </div>
@@ -486,17 +453,16 @@ export default function ProductPage({ params }: { params: { id: string } }) {
             </div>
 
             {/* Collapsible description */}
-            <div className="border border-white/[0.05]" style={{ borderRadius: '2px' }}>
+            <div className="border border-black/10 dark:border-white/[0.05] rounded-sm">
               <button
                 onClick={() => setDetailsOpen(!detailsOpen)}
-                className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-white/[0.02] transition-colors"
+                className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-black/[0.02] dark:hover:bg-white/[0.02] transition-colors"
               >
-                <span className="text-xs tracking-[0.2em] uppercase text-white/50"
-                      style={{ fontFamily: "'Space Mono', monospace" }}>
+                <span className="text-xs tracking-[0.2em] uppercase text-black/60 dark:text-white/50 font-mono">
                   Detalhes do Produto
                 </span>
                 <motion.span animate={{ rotate: detailsOpen ? 180 : 0 }} transition={{ duration: 0.2 }}>
-                  <ChevronDown size={14} className="text-white/30" />
+                  <ChevronDown size={14} className="text-black/40 dark:text-white/30" />
                 </motion.span>
               </button>
 
@@ -509,22 +475,15 @@ export default function ProductPage({ params }: { params: { id: string } }) {
                     transition={{ duration: 0.3 }}
                     className="overflow-hidden"
                   >
-                    <div className="px-4 pb-4 space-y-4 border-t border-white/[0.05]">
-                      <p className="text-sm text-white/40 leading-relaxed pt-3"
-                         style={{ fontFamily: "'Barlow', system-ui, sans-serif", fontWeight: 300 }}>
+                    <div className="px-4 pb-4 space-y-4 border-t border-black/10 dark:border-white/[0.05]">
+                      <p className="text-sm text-black/60 dark:text-white/40 leading-relaxed pt-3 font-body font-light">
                         {product.description}
                       </p>
                       <div className="flex flex-wrap gap-2">
                         {product.features.map((f) => (
                           <span key={f}
-                                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[10px] tracking-wider"
-                                style={{
-                                  fontFamily: "'Space Mono', monospace",
-                                  background: 'rgba(255,69,0,0.08)',
-                                  border: '1px solid rgba(255,69,0,0.2)',
-                                  color: '#FF4500',
-                                  borderRadius: '2px',
-                                }}>
+                                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[10px] tracking-wider font-mono bg-fire-orange/10 border border-fire-orange/30 text-fire-orange rounded-sm"
+                          >
                             {FEATURE_ICONS[f] ?? FEATURE_ICONS.default}
                             {f}
                           </span>
@@ -542,21 +501,14 @@ export default function ProductPage({ params }: { params: { id: string } }) {
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.5 }}
-                className="flex items-center gap-2 px-3 py-2"
-                style={{
-                  background: 'rgba(255,0,0,0.06)',
-                  border: '1px solid rgba(255,0,0,0.15)',
-                  borderRadius: '2px',
-                }}
+                className="flex items-center gap-2 px-3 py-2 bg-red-500/10 border border-red-500/20 rounded-sm"
               >
                 <motion.div
-                  className="w-2 h-2 rounded-full flex-shrink-0"
+                  className="w-2 h-2 rounded-full flex-shrink-0 bg-red-500"
                   animate={{ opacity: [1, 0.3, 1] }}
                   transition={{ duration: 1.2, repeat: Infinity }}
-                  style={{ background: '#FF0000' }}
                 />
-                <span className="text-[10px] text-red-400/80"
-                      style={{ fontFamily: "'Space Mono', monospace" }}>
+                <span className="text-[10px] text-red-500/80 font-mono">
                   Apenas {product.stock} unidades em estoque!
                 </span>
               </motion.div>

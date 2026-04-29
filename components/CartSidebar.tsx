@@ -50,27 +50,25 @@ export default function CartSidebar() {
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
             transition={{ type: 'spring', damping: 32, stiffness: 300 }}
-            className="cart-sidebar fixed top-0 right-0 bottom-0 z-[90] w-full max-w-md flex flex-col"
+            className="fixed top-0 right-0 bottom-0 z-[90] w-full max-w-md flex flex-col bg-white/98 dark:bg-[#050505]/98 backdrop-blur-2xl border-l border-black/10 dark:border-white/10 shadow-2xl"
           >
             {/* Header */}
-            <div className="flex items-center justify-between px-6 py-5 border-b border-white/[0.06]">
+            <div className="flex items-center justify-between px-6 py-5 border-b border-black/5 dark:border-white/[0.06]">
               <div className="flex items-center gap-3">
                 <div
-                  className="w-8 h-8 flex items-center justify-center"
-                  style={{ background: 'linear-gradient(135deg, #FF0000, #FFA500)', borderRadius: '2px' }}
+                  className="w-8 h-8 flex items-center justify-center rounded-sm"
+                  style={{ background: 'linear-gradient(135deg, #FF0000, #FFA500)' }}
                 >
                   <ShoppingBag size={14} className="text-black" />
                 </div>
                 <div>
                   <h2
-                    className="text-lg leading-none"
-                    style={{ fontFamily: "'Bebas Neue', Impact, sans-serif", letterSpacing: '0.1em' }}
+                    className="text-lg font-display leading-none tracking-[0.1em] text-black dark:text-white"
                   >
                     CARRINHO
                   </h2>
                   <p
-                    className="text-[10px] text-white/30 mt-0.5"
-                    style={{ fontFamily: "'Space Mono', monospace" }}
+                    className="text-[10px] text-black/50 dark:text-white/30 mt-0.5 font-mono"
                   >
                     {count} {count === 1 ? 'item' : 'itens'}
                   </p>
@@ -81,9 +79,8 @@ export default function CartSidebar() {
                 whileHover={{ scale: 1.1, rotate: 90 }}
                 whileTap={{ scale: 0.9 }}
                 onClick={closeCart}
-                className="w-8 h-8 flex items-center justify-center border border-white/10
-                           text-white/40 hover:text-white hover:border-white/30 transition-all"
-                style={{ borderRadius: '2px' }}
+                className="w-8 h-8 flex items-center justify-center border border-black/10 dark:border-white/10
+                           text-black/40 dark:text-white/40 hover:text-black dark:hover:text-white hover:border-black/30 dark:hover:border-white/30 transition-all rounded-sm"
               >
                 <X size={14} />
               </motion.button>
@@ -106,21 +103,18 @@ export default function CartSidebar() {
                     className="flex flex-col items-center justify-center h-full gap-6 py-20 text-center"
                   >
                     <div
-                      className="w-16 h-16 flex items-center justify-center border border-white/10"
-                      style={{ borderRadius: '2px' }}
+                      className="w-16 h-16 flex items-center justify-center border border-black/10 dark:border-white/10 rounded-sm"
                     >
-                      <ShoppingBag size={24} className="text-white/20" />
+                      <ShoppingBag size={24} className="text-black/20 dark:text-white/20" />
                     </div>
                     <div>
                       <p
-                        className="text-2xl text-white/30"
-                        style={{ fontFamily: "'Bebas Neue', Impact, sans-serif", letterSpacing: '0.1em' }}
+                        className="text-2xl text-black/40 dark:text-white/30 font-display tracking-[0.1em]"
                       >
                         Carrinho Vazio
                       </p>
                       <p
-                        className="text-[11px] text-white/20 mt-2"
-                        style={{ fontFamily: "'Space Mono', monospace" }}
+                        className="text-[11px] text-black/30 dark:text-white/20 mt-2 font-mono"
                       >
                         Adicione produtos para continuar
                       </p>
@@ -129,13 +123,7 @@ export default function CartSidebar() {
                       whileHover={{ scale: 1.03 }}
                       whileTap={{ scale: 0.97 }}
                       onClick={closeCart}
-                      className="btn-fire px-6 py-3 text-sm uppercase font-bold tracking-wider"
-                      style={{
-                        fontFamily: "'Barlow Condensed', system-ui, sans-serif",
-                        fontWeight: 700,
-                        letterSpacing: '0.15em',
-                        borderRadius: '2px',
-                      }}
+                      className="btn-fire px-6 py-3 text-sm uppercase font-body font-bold tracking-[0.15em] rounded-sm text-white"
                     >
                       <span>Ver Produtos</span>
                     </motion.button>
@@ -149,8 +137,7 @@ export default function CartSidebar() {
                       animate={{ opacity: 1, x: 0, scale: 1 }}
                       exit={{ opacity: 0, x: 30, scale: 0.95 }}
                       transition={{ type: 'spring', damping: 25, stiffness: 250 }}
-                      className="flex gap-4 p-3 border border-white/[0.05] hover:border-fire-orange/20 transition-colors duration-300 group"
-                      style={{ background: 'rgba(255,255,255,0.02)', borderRadius: '2px' }}
+                      className="flex gap-4 p-3 border border-black/5 dark:border-white/[0.05] hover:border-fire-orange/40 transition-colors duration-300 group rounded-sm bg-black/[0.02] dark:bg-white/[0.02]"
                     >
                       {/* Item Image */}
                       <div className="relative w-20 h-24 flex-shrink-0 overflow-hidden" style={{ borderRadius: '2px' }}>
@@ -169,22 +156,19 @@ export default function CartSidebar() {
                       {/* Item Info */}
                       <div className="flex-1 min-w-0">
                         <h4
-                          className="text-sm text-white leading-tight truncate"
-                          style={{ fontFamily: "'Bebas Neue', Impact, sans-serif", letterSpacing: '0.05em', fontSize: '1rem' }}
+                          className="text-[1rem] text-black dark:text-white leading-tight truncate font-display tracking-[0.05em]"
                         >
                           {item.name}
                         </h4>
                         <div className="flex items-center gap-2 mt-1">
                           <span
-                            className="text-[10px] text-white/30 border border-white/10 px-2 py-0.5"
-                            style={{ fontFamily: "'Space Mono', monospace", borderRadius: '1px' }}
+                            className="text-[10px] text-black/50 dark:text-white/30 border border-black/10 dark:border-white/10 px-2 py-0.5 font-mono rounded-sm"
                           >
                             {item.size}
                           </span>
                           {item.color && (
                             <span
-                              className="text-[10px] text-white/20 truncate"
-                              style={{ fontFamily: "'Space Mono', monospace" }}
+                              className="text-[10px] text-black/40 dark:text-white/20 truncate font-mono"
                             >
                               {item.color}
                             </span>
@@ -197,24 +181,21 @@ export default function CartSidebar() {
                             <motion.button
                               whileTap={{ scale: 0.85 }}
                               onClick={() => updateQty(item.id, item.size, item.quantity - 1)}
-                              className="w-6 h-6 flex items-center justify-center border border-white/10
-                                         text-white/40 hover:text-white hover:border-white/30 transition-all"
-                              style={{ borderRadius: '1px' }}
+                              className="w-6 h-6 flex items-center justify-center border border-black/10 dark:border-white/10
+                                         text-black/40 dark:text-white/40 hover:text-black dark:hover:text-white hover:border-black/30 dark:hover:border-white/30 transition-all rounded-sm"
                             >
                               <Minus size={10} />
                             </motion.button>
                             <span
-                              className="w-8 text-center text-sm text-white"
-                              style={{ fontFamily: "'Space Mono', monospace" }}
+                              className="w-8 text-center text-sm text-black dark:text-white font-mono"
                             >
                               {item.quantity}
                             </span>
                             <motion.button
                               whileTap={{ scale: 0.85 }}
                               onClick={() => updateQty(item.id, item.size, item.quantity + 1)}
-                              className="w-6 h-6 flex items-center justify-center border border-white/10
-                                         text-white/40 hover:text-white hover:border-fire-orange hover:text-fire-orange transition-all"
-                              style={{ borderRadius: '1px' }}
+                              className="w-6 h-6 flex items-center justify-center border border-black/10 dark:border-white/10
+                                         text-black/40 dark:text-white/40 hover:text-fire-orange dark:hover:text-fire-orange hover:border-fire-orange transition-all rounded-sm"
                             >
                               <Plus size={10} />
                             </motion.button>
@@ -222,26 +203,18 @@ export default function CartSidebar() {
 
                           {/* Price */}
                           <span
-                            className="text-base font-bold"
-                            style={{
-                              fontFamily: "'Bebas Neue', Impact, sans-serif",
-                              background: 'linear-gradient(135deg, #FF4500, #FFA500)',
-                              WebkitBackgroundClip: 'text',
-                              WebkitTextFillColor: 'transparent',
-                              backgroundClip: 'text',
-                            }}
+                            className="text-base font-bold font-display text-fire-glow"
                           >
                             {fmt(item.price * item.quantity)}
                           </span>
                         </div>
                       </div>
 
-                      {/* Remove */}
                       <motion.button
                         whileHover={{ scale: 1.1 }}
                         whileTap={{ scale: 0.9 }}
                         onClick={() => removeItem(item.id, item.size)}
-                        className="self-start mt-1 p-1 text-white/20 hover:text-red-400 transition-colors"
+                        className="self-start mt-1 p-1 text-black/30 dark:text-white/20 hover:text-red-500 dark:hover:text-red-400 transition-colors"
                       >
                         <Trash2 size={13} />
                       </motion.button>
@@ -253,37 +226,26 @@ export default function CartSidebar() {
 
             {/* Footer – total + CTA */}
             {items.length > 0 && (
-              <div className="flex-shrink-0 border-t border-white/[0.06] px-6 py-6 space-y-3">
+              <div className="flex-shrink-0 border-t border-black/5 dark:border-white/[0.06] px-6 py-6 space-y-3">
                 {/* Free shipping notice */}
                 <div className="flex items-center gap-2">
-                  <Zap size={11} fill="#FF4500" stroke="none" />
+                  <Zap size={11} className="text-fire-orange fill-fire-orange" stroke="none" />
                   <span
-                    className="text-[10px] tracking-wider text-white/40"
-                    style={{ fontFamily: "'Space Mono', monospace" }}
+                    className="text-[10px] tracking-wider text-black/60 dark:text-white/40 font-mono"
                   >
                     FRETE GRÁTIS em compras acima de R$299
                   </span>
                 </div>
 
                 {/* Subtotal */}
-                <div className="flex items-center justify-between py-3 border-y border-white/[0.05]">
+                <div className="flex items-center justify-between py-3 border-y border-black/5 dark:border-white/[0.05]">
                   <span
-                    className="text-sm uppercase tracking-wider text-white/40"
-                    style={{ fontFamily: "'Space Mono', monospace" }}
+                    className="text-sm uppercase tracking-wider text-black/50 dark:text-white/40 font-mono"
                   >
                     Subtotal
                   </span>
                   <span
-                    className="text-2xl"
-                    style={{
-                      fontFamily: "'Bebas Neue', Impact, sans-serif",
-                      letterSpacing: '0.05em',
-                      background: 'linear-gradient(135deg, #FF0000, #FF4500, #FFA500)',
-                      WebkitBackgroundClip: 'text',
-                      WebkitTextFillColor: 'transparent',
-                      backgroundClip: 'text',
-                      filter: 'drop-shadow(0 0 10px rgba(255,69,0,0.4))',
-                    }}
+                    className="text-2xl font-display text-fire-glow tracking-[0.05em]"
                   >
                     {fmt(total)}
                   </span>
@@ -294,14 +256,8 @@ export default function CartSidebar() {
                   href="/cart"
                   onClick={closeCart}
                   className="w-full py-2.5 flex items-center justify-center gap-2
-                             border border-white/10 text-white/40 hover:text-white
-                             hover:border-white/20 transition-all duration-300"
-                  style={{
-                    fontFamily: "'Space Mono', monospace",
-                    fontSize: '0.65rem',
-                    letterSpacing: '0.2em',
-                    borderRadius: '2px',
-                  }}
+                             border border-black/10 dark:border-white/10 text-black/50 dark:text-white/40 hover:text-black dark:hover:text-white
+                             hover:border-black/20 dark:hover:border-white/20 transition-all duration-300 font-mono text-[0.65rem] tracking-[0.2em] rounded-sm"
                 >
                   <ExternalLink size={11} />
                   VER CARRINHO COMPLETO
@@ -313,13 +269,7 @@ export default function CartSidebar() {
                     whileHover={{ scale: 1.02, y: -1 }}
                     whileTap={{ scale: 0.98 }}
                     className="btn-fire w-full py-4 flex items-center justify-center gap-3
-                               text-sm uppercase font-bold tracking-widest cursor-pointer"
-                    style={{
-                      fontFamily: "'Barlow Condensed', system-ui, sans-serif",
-                      fontWeight: 700,
-                      letterSpacing: '0.15em',
-                      borderRadius: '2px',
-                    }}
+                               text-sm uppercase font-bold tracking-widest cursor-pointer font-body rounded-sm text-white"
                   >
                     <span>Finalizar Pedido</span>
                     <ArrowRight size={16} className="relative z-10" />
@@ -327,8 +277,7 @@ export default function CartSidebar() {
                 </Link>
 
                 <p
-                  className="text-center text-[10px] text-white/20"
-                  style={{ fontFamily: "'Space Mono', monospace" }}
+                  className="text-center text-[10px] text-black/40 dark:text-white/20 font-mono"
                 >
                   🔒 Pagamento 100% Seguro · PIX · Cartão · Boleto
                 </p>

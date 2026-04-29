@@ -37,13 +37,9 @@ export default function Hero() {
   return (
     <section
       ref={containerRef}
-      className="relative min-h-screen flex items-center justify-center overflow-hidden"
-      style={{ background: '#000' }}
+      className="relative min-h-screen flex items-center justify-center overflow-hidden bg-white dark:bg-black"
     >
       {/* ── Background layers ── */}
-
-      {/* Grid lines */}
-      <div className="absolute inset-0 hero-grid-lines opacity-60" />
 
       {/* Radial glow center */}
       <motion.div
@@ -129,12 +125,11 @@ export default function Hero() {
             style={{ background: 'linear-gradient(90deg, transparent, #FF4500)' }}
           />
           <span
-            className="flex items-center gap-2 text-[11px] tracking-[0.5em] uppercase"
-            style={{ fontFamily: "'Space Mono', monospace", color: '#FF4500' }}
+            className="flex items-center gap-2 text-[11px] font-mono tracking-[0.5em] uppercase text-fire-orange"
           >
-            <Flame size={10} fill="#FF4500" />
+            <Flame size={10} className="text-fire-orange" />
             NOVA COLEÇÃO 2025
-            <Flame size={10} fill="#FF4500" />
+            <Flame size={10} className="text-fire-orange" />
           </span>
           <div
             className="h-px w-16 opacity-40"
@@ -150,10 +145,9 @@ export default function Hero() {
           className="relative inline-block mb-4"
         >
           <h1
-            className="glitch-text relative text-[clamp(5rem,20vw,18rem)] leading-none tracking-[-0.02em] select-none"
+            className="glitch-text font-display relative text-[clamp(5rem,20vw,18rem)] leading-none tracking-[-0.02em] select-none"
             data-text="BONDS"
             style={{
-              fontFamily: "'Bebas Neue', Impact, sans-serif",
               background: 'linear-gradient(135deg, #FF0000 0%, #FF4500 40%, #FFA500 80%, #FF4500 100%)',
               backgroundSize: '300% auto',
               WebkitBackgroundClip: 'text',
@@ -187,18 +181,15 @@ export default function Hero() {
           className="flex items-center justify-center gap-4 mb-6"
         >
           <span
-            className="text-[clamp(1.2rem,4vw,3rem)] tracking-[0.6em] uppercase text-white/30"
-            style={{ fontFamily: "'Barlow Condensed', system-ui, sans-serif", fontWeight: 300 }}
+            className="text-[clamp(1.2rem,4vw,3rem)] font-body tracking-[0.6em] uppercase text-black/40 dark:text-white/30 font-light"
           >
             AGENCE
           </span>
           <div
-            className="w-2 h-2 rotate-45 flex-shrink-0"
-            style={{ background: '#FF4500' }}
+            className="w-2 h-2 rotate-45 flex-shrink-0 bg-fire-orange"
           />
           <span
-            className="text-[clamp(1.2rem,4vw,3rem)] tracking-[0.6em] uppercase text-white/30"
-            style={{ fontFamily: "'Barlow Condensed', system-ui, sans-serif", fontWeight: 300 }}
+            className="text-[clamp(1.2rem,4vw,3rem)] font-body tracking-[0.6em] uppercase text-black/40 dark:text-white/30 font-light"
           >
             SPORTLIFE
           </span>
@@ -209,12 +200,7 @@ export default function Hero() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, delay: 0.4 }}
-          className="max-w-xl mx-auto mb-10 text-white/40 leading-relaxed"
-          style={{
-            fontFamily: "'Barlow', system-ui, sans-serif",
-            fontWeight: 300,
-            fontSize: 'clamp(0.9rem, 2vw, 1.05rem)',
-          }}
+          className="max-w-xl mx-auto mb-10 text-black/60 dark:text-white/40 leading-relaxed font-body font-light text-[clamp(0.9rem,2vw,1.05rem)]"
         >
           Vista-se como um mito. Corta-ventos, conjuntos e kits refletivos
           feitos para os que vivem além do limite.
@@ -231,14 +217,7 @@ export default function Hero() {
             href="#produtos"
             whileHover={{ scale: 1.03, y: -2 }}
             whileTap={{ scale: 0.97 }}
-            className="btn-fire inline-flex items-center gap-3 px-8 py-4 font-body font-800 tracking-widest uppercase"
-            style={{
-              fontFamily: "'Barlow Condensed', system-ui, sans-serif",
-              fontWeight: 800,
-              fontSize: '0.9rem',
-              letterSpacing: '0.15em',
-              borderRadius: '2px',
-            }}
+            className="btn-fire inline-flex items-center gap-3 px-8 py-4 font-body font-extrabold tracking-[0.15em] uppercase text-[0.9rem] rounded-sm text-white"
           >
             <span>Ver os Kits</span>
             <ArrowRight size={16} className="relative z-10" />
@@ -248,17 +227,10 @@ export default function Hero() {
             href="#produtos"
             whileHover={{ scale: 1.03, y: -2 }}
             whileTap={{ scale: 0.97 }}
-            className="btn-outline-fire inline-flex items-center gap-3 px-8 py-4"
-            style={{
-              fontFamily: "'Barlow Condensed', system-ui, sans-serif",
-              fontWeight: 700,
-              fontSize: '0.9rem',
-              letterSpacing: '0.15em',
-              borderRadius: '2px',
-            }}
+            className="btn-outline-fire inline-flex items-center gap-3 px-8 py-4 font-body font-bold tracking-[0.15em] text-[0.9rem] rounded-sm"
           >
-            <Zap size={14} style={{ color: '#FF4500' }} />
-            <span className="uppercase text-white/80">Drops da Semana</span>
+            <Zap size={14} className="text-fire-orange" />
+            <span className="uppercase text-black/80 dark:text-white/80">Drops da Semana</span>
           </motion.a>
         </motion.div>
 
@@ -279,13 +251,11 @@ export default function Hero() {
             >
               <div
                 className="text-fire-glow text-3xl sm:text-4xl font-display leading-none"
-                style={{ fontFamily: "'Bebas Neue', Impact, sans-serif" }}
               >
                 {stat.value}
               </div>
               <div
-                className="text-white/30 text-xs tracking-widest uppercase mt-1"
-                style={{ fontFamily: "'Space Mono', monospace" }}
+                className="text-black/40 dark:text-white/30 text-xs tracking-widest uppercase mt-1 font-mono"
               >
                 {stat.label}
               </div>
@@ -302,8 +272,7 @@ export default function Hero() {
         className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2"
       >
         <span
-          className="text-[10px] tracking-[0.4em] text-white/20 uppercase"
-          style={{ fontFamily: "'Space Mono', monospace" }}
+          className="text-[10px] tracking-[0.4em] text-black/30 dark:text-white/20 uppercase font-mono"
         >
           SCROLL
         </span>
