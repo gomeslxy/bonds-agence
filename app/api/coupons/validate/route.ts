@@ -1,9 +1,10 @@
 import { NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { createClient } from '@/lib/supabase/server';
 
 export async function POST(req: Request) {
   try {
     const { code } = await req.json();
+    const supabaseServer = createClient();
     
     if (!code) {
       return NextResponse.json({ error: 'Código não fornecido' }, { status: 400 });
@@ -20,7 +21,7 @@ export async function POST(req: Request) {
     }
 
     // 2. Check Supabase for other coupons
-    const { data: coupon, error } = await supabase
+    const { data: coupon, error } = await supabaseServer
       .from('coupons')
       .select('*')
       .eq('code', code.toUpperCase())

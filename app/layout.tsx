@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import './globals.css';
 import ToastVFXProvider from '@/components/ToastVFX';
 import { ThemeProvider } from '@/components/ThemeProvider';
+import VFXBackground from '@/components/VFXBackground';
 import { Bebas_Neue, Barlow_Condensed, Barlow, Space_Mono } from 'next/font/google';
 
 const bebas = Bebas_Neue({ weight: '400', subsets: ['latin'], variable: '--font-bebas' });
@@ -44,6 +45,7 @@ export default function RootLayout({
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           {/* Noise overlay – always on top */}
           <div className="noise-overlay" aria-hidden="true" />
+          <VFXBackground />
           {/* Global toast notifications */}
           <ToastVFXProvider />
           {children}

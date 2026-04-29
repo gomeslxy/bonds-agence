@@ -3,7 +3,7 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
 import { useState } from 'react';
-import { ChevronDown, Package, CreditCard, Zap, FileText, MapPin, User, Tag } from 'lucide-react';
+import { ChevronDown, Package, CreditCard, Zap, FileText, MapPin, User, Tag, Activity, Clock, CheckCircle, XCircle } from 'lucide-react';
 import { useAdmin } from '@/store/useAdmin';
 import { type Order, type OrderStatus } from '@/lib/storage';
 import { formatCurrency } from '@/lib/utils';
@@ -17,17 +17,17 @@ const STATUS_LABELS: Record<string, string> = {
 };
 
 const STATUS_STYLES: Record<string, { bg: string; color: string; border: string }> = {
-  'Pendente':  { bg: 'rgba(255,165,0,0.1)',  color: '#FFA500', border: 'rgba(255,165,0,0.3)' },
-  'Pago':      { bg: 'rgba(74,222,128,0.1)', color: '#4ade80', border: 'rgba(74,222,128,0.3)' },
-  'Enviado':   { bg: 'rgba(96,165,250,0.1)', color: '#60a5fa', border: 'rgba(96,165,250,0.3)' },
-  'Entregue':  { bg: 'rgba(255,255,255,0.05)',color: '#fff',    border: 'rgba(255,255,255,0.1)' },
-  'Cancelado': { bg: 'rgba(255,0,0,0.1)',    color: '#FF4444', border: 'rgba(255,0,0,0.3)' },
+  'Pendente':  { bg: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.6)', border: 'rgba(255,255,255,0.1)' },
+  'Pago':      { bg: 'rgba(255,255,255,1)',    color: 'rgba(0,0,0,1)',       border: 'rgba(255,255,255,1)' },
+  'Enviado':   { bg: 'rgba(255,255,255,0.1)',  color: 'rgba(255,255,255,0.9)', border: 'rgba(255,255,255,0.2)' },
+  'Entregue':  { bg: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.4)', border: 'rgba(255,255,255,0.05)' },
+  'Cancelado': { bg: 'rgba(255,0,0,0.1)',       color: 'rgba(239, 68, 68, 0.8)', border: 'rgba(239, 68, 68, 0.2)' },
 };
 
 const PAY_ICONS: Record<Order['payMethod'], React.ReactNode> = {
-  card:   <CreditCard size={11} />,
-  pix:    <Zap size={11} />,
-  boleto: <FileText size={11} />,
+  card:   <CreditCard size={12} />,
+  pix:    <Zap size={12} />,
+  boleto: <FileText size={12} />,
 };
 
 const ALL_STATUSES = ['Pendente', 'Pago', 'Enviado', 'Entregue', 'Cancelado'];
@@ -36,66 +36,65 @@ function OrderRow({ order }: { order: Order }) {
   const [expanded, setExpanded] = useState(false);
   const { changeStatus } = useAdmin();
   const s = STATUS_STYLES[order.status] || STATUS_STYLES['Pendente'];
-  const date = new Date(order.createdAt).toLocaleDateString('pt-BR');
+  const date = new Date(order.createdAt).toLocaleDateString('pt-BR', { month: 'short', day: 'numeric', year: 'numeric' });
 
   return (
     <>
       <motion.tr
         layout
-        className="border-b border-black/5 dark:border-white/[0.04] hover:bg-black/[0.02] dark:hover:bg-white/[0.015] transition-colors cursor-pointer"
+        className="border-b border-black/5 dark:border-white/[0.04] hover:bg-black/[0.02] dark:hover:bg-white/[0.015] transition-all cursor-pointer group"
         onClick={() => setExpanded(!expanded)}
       >
-        <td className="px-4 py-3">
-          <span className="text-[0.7rem] text-black/70 dark:text-white/70 font-mono">
-            #{order.id.slice(0, 8)}
+        <td className="px-6 py-5">
+          <span className="text-[10px] text-black/40 dark:text-white/20 font-mono tracking-tighter group-hover:text-black dark:group-hover:text-white transition-colors">
+            #{order.id.slice(0, 8).toUpperCase()}
           </span>
         </td>
-        <td className="px-4 py-3">
-          <div>
-            <p className="text-sm text-black dark:text-white font-body font-semibold">
+        <td className="px-6 py-5">
+          <div className="flex flex-col">
+            <p className="text-sm font-bold tracking-tight text-black dark:text-white uppercase italic">
               {order.customer.name}
             </p>
-            <p className="text-[10px] text-black/40 dark:text-white/30 font-mono">
+            <p className="text-[9px] text-black/40 dark:text-white/40 font-mono tracking-widest uppercase truncate max-w-[150px]">
               {order.customer.email}
             </p>
           </div>
         </td>
-        <td className="px-4 py-3 hidden sm:table-cell">
-          <span className="text-xs text-black/50 dark:text-white/40 font-mono">{date}</span>
+        <td className="px-6 py-5 hidden sm:table-cell">
+          <span className="text-[10px] text-black/30 dark:text-white/30 font-mono uppercase tracking-widest">{date}</span>
         </td>
-        <td className="px-4 py-3">
-          <span className="font-bold text-[1.1rem] font-display text-transparent bg-clip-text bg-gradient-to-br from-[#FF4500] to-[#FFA500]">
+        <td className="px-6 py-5">
+          <span className="text-lg font-bold tracking-tighter text-black dark:text-white">
             {formatCurrency(order.total)}
           </span>
         </td>
-        <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
+        <td className="px-6 py-5" onClick={(e) => e.stopPropagation()}>
           <select
             value={order.status}
             onChange={(e) => changeStatus(order.id, e.target.value as OrderStatus)}
-            className="text-xs px-2 py-1.5 outline-none cursor-pointer font-mono"
+            className="text-[9px] font-bold tracking-[0.2em] uppercase px-3 py-1.5 outline-none cursor-pointer rounded-sm appearance-none border transition-all hover:scale-105"
             style={{
               background: s.bg,
-              border: `1px solid ${s.border}`,
+              borderColor: s.border,
               color: s.color,
-              borderRadius: '2px',
             }}
           >
             {ALL_STATUSES.map((st) => (
-              <option key={st} value={st} className="bg-white dark:bg-[#111] text-black dark:text-white">{STATUS_LABELS[st]}</option>
+              <option key={st} value={st} className="bg-white dark:bg-black text-black dark:text-white">{STATUS_LABELS[st]}</option>
             ))}
           </select>
         </td>
-        <td className="px-4 py-3">
-          <div className="flex items-center gap-1.5">
-            <span style={{ color: s.color }}>{PAY_ICONS[order.payMethod]}</span>
-            <span className="text-[10px] uppercase text-black/40 dark:text-white/30 font-mono">
+        <td className="px-6 py-5">
+          <div className="flex items-center gap-3">
+            <div className="text-black/20 dark:text-white/20">{PAY_ICONS[order.payMethod]}</div>
+            <span className="text-[9px] font-mono tracking-[0.2em] uppercase text-black/40 dark:text-white/40">
               {order.payMethod}
             </span>
           </div>
         </td>
-        <td className="px-4 py-3">
-          <motion.div animate={{ rotate: expanded ? 180 : 0 }} transition={{ duration: 0.2 }}>
-            <ChevronDown size={14} className="text-black/30 dark:text-white/30" />
+        <td className="px-6 py-5">
+          <motion.div animate={{ rotate: expanded ? 180 : 0 }} transition={{ duration: 0.3 }}>
+            <ChevronDown size={14} className="text-black/20 dark:text-white/20" />
           </motion.div>
         </td>
       </motion.tr>
@@ -104,79 +103,90 @@ function OrderRow({ order }: { order: Order }) {
       <AnimatePresence>
         {expanded && (
           <motion.tr
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
           >
-            <td colSpan={7} className="px-6 pb-6 pt-2">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6 border border-black/5 dark:border-white/[0.04] bg-black/[0.02] dark:bg-white/[0.015] rounded-sm">
+            <td colSpan={7} className="px-8 pb-12 pt-4 bg-black/[0.01] dark:bg-white/[0.01]">
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 p-8 border border-black/5 dark:border-white/5 bg-white dark:bg-black/40 rounded-sm">
                 
-                {/* Detalhes do Cliente */}
-                <div className="space-y-4">
-                  <div className="flex items-center gap-2 text-[10px] text-black/50 dark:text-white/30 tracking-widest uppercase mb-2 font-mono">
-                    <User size={12} /> Dados do Cliente
-                  </div>
-                  <div className="space-y-2 font-mono text-[11px]">
-                    <p><span className="text-black/40 dark:text-white/20">NOME:</span> <span className="text-black/80 dark:text-white/80">{order.customer.name}</span></p>
-                    <p><span className="text-black/40 dark:text-white/20">EMAIL:</span> <span className="text-black/80 dark:text-white/80">{order.customer.email}</span></p>
-                    <p><span className="text-black/40 dark:text-white/20">CPF:</span> <span className="text-fire-orange">{order.customer.cpf}</span></p>
+                {/* Customer Intel */}
+                <div className="lg:col-span-5 space-y-8">
+                  <div>
+                    <div className="flex items-center gap-3 text-[10px] font-mono tracking-[0.4em] text-white/20 uppercase mb-6">
+                      <User size={12} /> Informações do Cliente
+                    </div>
+                    <div className="space-y-4">
+                      <div className="flex flex-col">
+                        <span className="text-[8px] font-mono text-white/20 uppercase">Primary Contact</span>
+                        <span className="text-xs font-bold text-white">{order.customer.name}</span>
+                        <span className="text-[10px] font-mono text-white/40">{order.customer.email}</span>
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="text-[8px] font-mono text-white/20 uppercase">Document ID (CPF)</span>
+                        <span className="text-xs font-mono text-white">{order.customer.cpf}</span>
+                      </div>
+                    </div>
                   </div>
 
-                  <div className="flex items-center gap-2 text-[10px] text-black/50 dark:text-white/30 tracking-widest uppercase mb-2 pt-2 font-mono">
-                    <MapPin size={12} /> Endereço de Entrega
-                  </div>
-                  <div className="space-y-1 font-mono text-[11px] text-black/80 dark:text-white/80">
-                    <p>{order.customer.address}, {order.customer.number}</p>
-                    {order.customer.complement && <p>{order.customer.complement}</p>}
-                    <p>{order.customer.neighborhood}</p>
-                    <p>{order.customer.city} - {order.customer.state}</p>
-                    <p className="text-fire-orange">CEP: {order.customer.cep}</p>
+                  <div>
+                    <div className="flex items-center gap-3 text-[10px] font-mono tracking-[0.4em] text-white/20 uppercase mb-6 pt-4 border-t border-white/5">
+                      <MapPin size={12} /> Shipping Logic
+                    </div>
+                    <div className="space-y-2 text-[10px] font-mono text-white/60 leading-relaxed uppercase tracking-wider">
+                      <p>{order.customer.address}, {order.customer.number}</p>
+                      {order.customer.complement && <p className="text-white/20">{order.customer.complement}</p>}
+                      <p>{order.customer.neighborhood}</p>
+                      <p>{order.customer.city} / {order.customer.state}</p>
+                      <p className="text-white pt-2">CEP: {order.customer.cep}</p>
+                    </div>
                   </div>
                 </div>
 
-                {/* Itens do Pedido */}
-                <div className="space-y-4">
-                   <div className="flex items-center gap-2 text-[10px] text-black/50 dark:text-white/30 tracking-widest uppercase mb-2 font-mono">
-                    <Package size={12} /> Itens do Pedido
+                {/* Manifest */}
+                <div className="lg:col-span-7 space-y-8">
+                   <div className="flex items-center gap-3 text-[10px] font-mono tracking-[0.4em] text-white/20 uppercase mb-6">
+                    <Package size={12} /> Resumo do Pedido
                   </div>
-                  <div className="space-y-3">
+                  <div className="space-y-4">
                     {order.items.map((item, i) => (
-                      <div key={i} className="flex items-center gap-3">
-                        <div className="relative w-10 h-12 flex-shrink-0 overflow-hidden" style={{ borderRadius: '2px' }}>
+                      <div key={i} className="flex items-center gap-6 group">
+                        <div className="relative w-12 h-16 bg-white/5 border border-white/5 overflow-hidden transition-transform group-hover:scale-105">
                           <Image src={item.image} alt={item.name} fill className="object-cover object-top" />
                         </div>
-                        <div className="flex-1">
-                          <p className="text-sm text-black dark:text-white font-display tracking-[0.05em]">
+                        <div className="flex-1 space-y-1">
+                          <p className="text-xs font-bold uppercase tracking-tight text-white italic">
                             {item.name}
                           </p>
-                          <p className="text-[10px] text-black/50 dark:text-white/30 font-mono">
-                            TAM: {item.size} · {item.color} · Qtd: {item.quantity}
+                          <p className="text-[9px] text-white/40 font-mono tracking-widest uppercase">
+                            TAM {item.size} · {item.color} · QTD {item.quantity}
                           </p>
                         </div>
-                        <span className="font-display text-transparent bg-clip-text bg-gradient-to-br from-[#FF4500] to-[#FFA500]">
+                        <span className="text-sm font-bold font-mono tracking-tighter text-white">
                           {formatCurrency(item.price * item.quantity)}
                         </span>
                       </div>
                     ))}
                   </div>
-                  <div className="pt-4 border-t border-black/5 dark:border-white/[0.05] space-y-2">
-                    <div className="flex justify-between text-[0.7rem] text-black/60 dark:text-white/40 font-mono">
-                      <span>SUBTOTAL:</span>
-                      <span>{formatCurrency(order.items.reduce((acc, i) => acc + i.price * i.quantity, 0))}</span>
+
+                  <div className="pt-8 border-t border-white/10 space-y-3">
+                    <div className="flex justify-between text-[9px] font-mono tracking-[0.2em] text-white/30 uppercase">
+                      <span>Subtotal</span>
+                      <span className="text-white/60">{formatCurrency(order.items.reduce((acc, i) => acc + i.price * i.quantity, 0))}</span>
                     </div>
-                    <div className="flex justify-between text-[0.7rem] text-black/60 dark:text-white/40 font-mono">
-                      <span>FRETE:</span>
-                      <span>{order.total >= 299 ? 'GRÁTIS' : formatCurrency(order.total - order.items.reduce((acc, i) => acc + i.price * i.quantity, 0) + (order.discountAmount || 0))}</span>
+                    <div className="flex justify-between text-[9px] font-mono tracking-[0.2em] text-white/30 uppercase">
+                      <span>Frete</span>
+                      <span className="text-white/60">{order.total >= 299 ? 'GRÁTIS' : formatCurrency(order.total - order.items.reduce((acc, i) => acc + i.price * i.quantity, 0) + (order.discountAmount || 0))}</span>
                     </div>
                     {order.couponCode && (
-                      <div className="flex justify-between text-[0.7rem] text-green-500 font-mono">
-                        <span className="flex items-center gap-1"><Tag size={10} /> CUPOM ({order.couponCode}):</span>
-                        <span>-{formatCurrency(order.discountAmount || 0)}</span>
+                      <div className="flex justify-between text-[9px] font-mono tracking-[0.2em] text-white/60 uppercase">
+                        <span className="flex items-center gap-2 italic">Cupom Aplicado ({order.couponCode})</span>
+                        <span className="text-white">-{formatCurrency(order.discountAmount || 0)}</span>
                       </div>
                     )}
-                    <div className="flex justify-between pt-2 border-t border-black/5 dark:border-white/[0.05] font-bold">
-                      <span className="text-[0.7rem] text-black dark:text-white font-mono uppercase tracking-widest">TOTAL:</span>
-                      <span className="text-[1.1rem] text-fire-orange font-display">{formatCurrency(order.total)}</span>
+                    <div className="flex justify-between pt-6 border-t border-white/10 items-baseline">
+                      <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-white/40">Valor Total</span>
+                      <span className="text-3xl font-bold tracking-tighter text-white">{formatCurrency(order.total)}</span>
                     </div>
                   </div>
                 </div>
@@ -197,52 +207,65 @@ export default function OrdersTable() {
   const pending  = orders.filter((o) => o.status?.toLowerCase() === 'pendente').length;
 
   return (
-    <div className="space-y-6">
-      {/* Summary cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+    <div className="space-y-12">
+      {/* Summary Matrix */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {[
-          { label: 'Total de Pedidos', value: orders.length.toString(), color: '#fff' },
-          { label: 'Aprovados',        value: approved.toString(),      color: '#4ade80' },
-          { label: 'Pendentes',        value: pending.toString(),        color: '#FFA500' },
-          { label: 'Receita Total',    value: formatCurrency(total),               color: '#FF4500' },
-        ].map((s) => (
-          <div key={s.label} className="p-4 border border-black/5 dark:border-white/[0.05] bg-black/[0.02] dark:bg-white/[0.02] rounded-[3px]">
-            <p className="text-[10px] text-black/50 dark:text-white/30 tracking-widest uppercase mb-2 font-mono">
-              {s.label}
-            </p>
-            <p className="text-2xl font-display" style={{ color: s.color }}>
+          { label: 'Total Pedidos', value: orders.length.toString(), icon: <Activity size={16} /> },
+          { label: 'Pagos',    value: approved.toString(),      icon: <CheckCircle size={16} /> },
+          { label: 'Pendentes',   value: pending.toString(),       icon: <Clock size={16} /> },
+          { label: 'Receita Bruta', value: formatCurrency(total),    icon: <Tag size={16} /> },
+        ].map((s, i) => (
+          <motion.div 
+            key={s.label}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: i * 0.1 }}
+            className="p-8 bg-white/5 border border-white/5 backdrop-blur-sm rounded-sm group hover:bg-white/10 transition-all duration-500"
+          >
+            <div className="flex items-center justify-between mb-4">
+              <p className="text-[9px] font-mono tracking-[0.4em] text-white/20 uppercase group-hover:text-white/40 transition-colors">
+                {s.label}
+              </p>
+              <div className="text-white/10 group-hover:text-white transition-colors duration-500">{s.icon}</div>
+            </div>
+            <p className="text-4xl font-bold tracking-tighter text-white group-hover:scale-105 transition-transform duration-500 origin-left">
               {s.value}
             </p>
-          </div>
+          </motion.div>
         ))}
       </div>
 
-      {/* Table */}
+      {/* Database View */}
       {orders.length === 0 ? (
-        <div className="text-center py-16 text-black/40 dark:text-white/20">
-          <Package size={40} className="mx-auto mb-4 opacity-40 dark:opacity-20" />
-          <p className="font-display text-[1.5rem] tracking-[0.1em]">
-            Nenhum pedido ainda
+        <div className="py-40 text-center border border-dashed border-white/10 rounded-sm">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-white/5 rounded-full mb-6">
+            <Package size={24} className="text-white/20" />
+          </div>
+          <p className="text-[10px] font-mono tracking-[0.5em] text-white/20 uppercase">
+            Aguardando primeiro pedido
           </p>
         </div>
       ) : (
-        <div className="overflow-x-auto border border-black/10 dark:border-white/5 rounded-md">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-black/5 dark:border-white/[0.06] bg-black/[0.02] dark:bg-white/[0.02]">
-                {['Pedido', 'Cliente', 'Data', 'Total', 'Status', 'Pagamento', ''].map((h) => (
-                  <th key={h} className="px-4 py-3 text-left text-[10px] tracking-[0.2em] uppercase text-black/50 dark:text-white/30 font-mono">
-                    {h}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              <AnimatePresence>
-                {orders.map((order) => <OrderRow key={order.id} order={order} />)}
-              </AnimatePresence>
-            </tbody>
-          </table>
+        <div className="overflow-hidden border border-white/5 bg-white/5 backdrop-blur-md rounded-sm">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="border-b border-white/10 bg-white/[0.02]">
+                  {['ID', 'Cliente', 'Data', 'Total', 'Status', 'Pagamento', 'Ações'].map((h) => (
+                    <th key={h} className="px-6 py-5 text-[10px] tracking-[0.4em] uppercase text-white/20 font-mono font-bold">
+                      {h}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-white/5">
+                <AnimatePresence mode="popLayout">
+                  {orders.map((order) => <OrderRow key={order.id} order={order} />)}
+                </AnimatePresence>
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
     </div>

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { supabaseAdmin } from '@/lib/supabase/admin';
 import { ratelimit } from '@/lib/ratelimit';
 
 export async function POST(req: Request) {
@@ -18,7 +18,7 @@ export async function POST(req: Request) {
     }
 
     // 2. Database Query
-    let q = supabase.from('orders').select('*').eq('id', id);
+    let q = supabaseAdmin.from('orders').select('*').eq('id', id);
     
     const formatCPF = (v: string) => {
       v = v.replace(/\D/g, '');

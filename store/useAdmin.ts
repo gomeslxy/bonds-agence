@@ -1,10 +1,12 @@
 'use client';
 
 import { create } from 'zustand';
-import { supabase } from '@/lib/supabase';
+import { createClient } from '@/lib/supabase/client';
 import { type Order, type OrderStatus } from '@/lib/storage';
 import { fireToast } from '@/components/ToastVFX';
 import { type Product } from '@/data/products';
+
+const supabase = createClient();
 import { siteConfig } from '@/config/siteConfig';
 
 interface AdminStore {
@@ -26,14 +28,12 @@ interface AdminStore {
   removeCoupon:  (id: string) => Promise<void>;
 
   // ── UI ────────────────────────────────────────────────────
-  activeTab:    'products' | 'orders';
-  setTab:       (t: 'products' | 'orders') => void;
+  activeTab:    'products' | 'orders' | 'coupons';
+  setTab:       (t: 'products' | 'orders' | 'coupons') => void;
   editingProduct: Product | null;
   setEditing:   (p: Product | null) => void;
   isAuthenticated: boolean;
   isLoading:       boolean;
-  login:        (pw: string) => Promise<boolean | 'blocked'>;
-  logout:       () => void;
   refreshData:  () => Promise<void>;
   resetToDefault: () => Promise<void>;
   
@@ -47,7 +47,7 @@ export const useAdmin = create<AdminStore>((set, get) => ({
   coupons:        [],
   activeTab:      'products',
   editingProduct: null,
-  isAuthenticated: typeof window !== 'undefined' ? localStorage.getItem('bonds_admin_auth') === 'true' : false,
+  isAuthenticated: false,
   isLoading:       false,
 
   loadProducts: async () => {
@@ -210,56 +210,6 @@ export const useAdmin = create<AdminStore>((set, get) => ({
 
   setTab:     (activeTab) => set({ activeTab }),
   setEditing: (editingProduct) => set({ editingProduct }),
-
-  checkAuth: () => {
-    if (typeof window === 'undefined') return;
-    const isAuth = localStorage.getItem('bonds_admin_auth') === 'true';
-    const authTime = localStorage.getItem('bonds_admin_auth_time');
-    
-    if (isAuth && authTime) {
-      const now = Date.now();
-      const fiveMinutes = 5 * 60 * 1000;
-      if (now - parseInt(authTime) > fiveMinutes) {
-        get().logout();
-      } else {
-        set({ isAuthenticated: true });
-      }
-    } else {
-      set({ isAuthenticated: false });
-    }
-  },
-
-  logout: () => {
-    localStorage.removeItem('bonds_admin_auth');
-    localStorage.removeItem('bonds_admin_auth_time');
-    set({ isAuthenticated: false });
-  },
-
-  login: async (pw) => {
-    try {
-      const res = await fetch('/api/admin/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password: pw }),
-      });
-      
-      const data = await res.json();
-      
-      if (res.status === 429) return 'blocked';
-
-      if (data.success) {
-        localStorage.setItem('bonds_admin_auth', 'true');
-        localStorage.setItem('bonds_admin_auth_time', Date.now().toString());
-        set({ isAuthenticated: true });
-        get().refreshData();
-        return true;
-      }
-      
-      return false;
-    } catch (error) {
-      return false;
-    }
-  },
 
   refreshData: async () => {
     set({ isLoading: true });

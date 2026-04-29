@@ -26,7 +26,7 @@ export default function Error({
       </div>
       <button
         onClick={() => reset()}
-        className="btn-fire px-8 py-3 rounded-sm font-body font-bold text-sm tracking-widest uppercase text-white shadow-fire-sm hover:shadow-fire-md transition-all"
+        className="btn-premium px-8 py-4 text-[10px] font-bold tracking-[0.2em] uppercase"
       >
         Tentar Novamente
       </button>

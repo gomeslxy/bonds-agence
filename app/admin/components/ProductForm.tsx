@@ -2,14 +2,22 @@
 
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { X, Save, Plus, Trash2, Image as ImageIcon, Upload, Loader2 } from 'lucide-react';
+import { X, Save, Plus, Trash2, Image as ImageIcon, Upload, Loader2, CheckCircle2, Activity, Tag } from 'lucide-react';
 import { useAdmin } from '@/store/useAdmin';
-import { supabase } from '@/lib/supabase';
+import { createClient } from '@/lib/supabase/client';
 import { type Product } from '@/data/products';
+
+const supabase = createClient();
 
 const CATEGORIES = ['Corta-Ventos', 'Conjuntos', 'Kits Refletivos', 'Regatas', 'Acessórios'];
 const SIZES_ALL  = ['PP', 'P', 'M', 'G', 'GG', 'XG'];
-const TAGS       = [{ label: '— Nenhum —', value: '' }, { label: 'HOT', value: 'HOT' }, { label: 'LANÇAMENTO', value: 'LANÇAMENTO' }, { label: 'EXCLUSIVO', value: 'EXCLUSIVO' }, { label: 'NOVO', value: 'NOVO' }, { label: 'SALE', value: 'SALE' }];
+const TAGS       = [
+  { label: '— Nenhum —', value: '' }, 
+  { label: 'EM ALTA', value: 'HOT' }, 
+  { label: 'LIMITADO', value: 'EXCLUSIVO' }, 
+  { label: 'NOVIDADE', value: 'NOVO' }, 
+  { label: 'PROMOÇÃO', value: 'SALE' }
+];
 
 function newProduct(): Product {
   return {
@@ -20,7 +28,7 @@ function newProduct(): Product {
     category:    'Corta-Ventos',
     image:       '',
     sizes:       ['M', 'G'],
-    colors:      [{ name: 'Preto', hex: '#0a0a0a' }],
+    colors:      [{ name: 'Black', hex: '#000000' }],
     description: '',
     features:    [],
     stock:       10,
@@ -29,42 +37,43 @@ function newProduct(): Product {
   };
 }
 
-/* ── Neon input ─────────────────────────────────────────── */
+/* ── Premium Input ───────────────────────────────────────── */
 function FInput({ label, value, onChange, placeholder = '', type = 'text', textarea = false }: {
   label: string; value: string | number; onChange: (v: string) => void;
   placeholder?: string; type?: string; textarea?: boolean;
 }) {
   const [focused, setFocused] = useState(false);
-  const base = {
-    background: focused ? 'rgba(255,69,0,0.04)' : 'rgba(128,128,128,0.05)',
-    border: `1px solid ${focused ? '#FF4500' : 'rgba(128,128,128,0.2)'}`,
-    boxShadow: focused ? '0 0 12px rgba(255,69,0,0.15)' : 'none',
-    borderRadius: '2px',
-    outline: 'none',
-    width: '100%',
-    padding: '10px 14px',
-    fontSize: '0.95rem',
-    transition: 'all 0.2s ease',
-  };
+  
   return (
-    <label className="block">
-      <span className="block text-[10px] tracking-[0.2em] uppercase mb-1.5 font-mono"
-            style={{ color: focused ? '#FF4500' : 'rgba(128,128,128,0.5)' }}>
+    <label className="block group">
+      <span className={`block text-[9px] tracking-[0.4em] uppercase mb-2 font-mono font-bold transition-colors ${focused ? 'text-black dark:text-white' : 'text-black/30 dark:text-white/30'}`}>
         {label}
       </span>
       {textarea
-        ? <textarea rows={3} value={value} placeholder={placeholder}
-                    onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
-                    onChange={(e) => onChange(e.target.value)} style={{ ...base, resize: 'vertical' }} className="font-body text-black dark:text-white" />
-        : <input type={type} value={value} placeholder={placeholder}
-                 onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
-                 onChange={(e) => onChange(e.target.value)} style={base} className="font-body text-black dark:text-white" />
+        ? <textarea 
+            rows={4} 
+            value={value} 
+            placeholder={placeholder}
+            onFocus={() => setFocused(true)} 
+            onBlur={() => setFocused(false)}
+            onChange={(e) => onChange(e.target.value)} 
+            className="w-full bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 px-5 py-4 text-sm font-bold tracking-tight outline-none focus:border-black dark:focus:border-white transition-all resize-none italic" 
+          />
+        : <input 
+            type={type} 
+            value={value} 
+            placeholder={placeholder}
+            onFocus={() => setFocused(true)} 
+            onBlur={() => setFocused(false)}
+            onChange={(e) => onChange(e.target.value)} 
+            className="w-full bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 px-5 py-4 text-sm font-bold tracking-tight outline-none focus:border-black dark:focus:border-white transition-all italic" 
+          />
       }
     </label>
   );
 }
 
-/* ── Main form ──────────────────────────────────────────── */
+/* ── Main Form Component ────────────────────────────────── */
 export default function ProductForm({ onClose }: { onClose: () => void }) {
   const { editingProduct, saveProduct } = useAdmin();
   const [form, setForm] = useState<Product>(editingProduct ?? newProduct());
@@ -72,7 +81,7 @@ export default function ProductForm({ onClose }: { onClose: () => void }) {
   const [uploading, setUploading] = useState(false);
   const [newFeature, setNewFeature] = useState('');
   const [newColorName, setNewColorName] = useState('');
-  const [newColorHex, setNewColorHex] = useState('#FF4500');
+  const [newColorHex, setNewColorHex] = useState('#000000');
 
   useEffect(() => {
     setForm(editingProduct ?? newProduct());
@@ -92,7 +101,7 @@ export default function ProductForm({ onClose }: { onClose: () => void }) {
   const addColor = () => {
     if (!newColorName) return;
     set('colors', [...form.colors, { name: newColorName, hex: newColorHex }]);
-    setNewColorName(''); setNewColorHex('#FF4500');
+    setNewColorName(''); setNewColorHex('#000000');
   };
 
   const removeColor = (i: number) =>
@@ -113,23 +122,16 @@ export default function ProductForm({ onClose }: { onClose: () => void }) {
 
     try {
       setUploading(true);
-      
-      // Create a unique filename
       const fileExt = file.name.split('.').pop();
       const fileName = `${Math.random().toString(36).substring(2)}-${Date.now()}.${fileExt}`;
       const filePath = `product-images/${fileName}`;
 
-      // Upload to 'products' bucket
-      const { error: uploadError, data } = await supabase.storage
+      const { error: uploadError } = await supabase.storage
         .from('products')
-        .upload(filePath, file, {
-          cacheControl: '3600',
-          upsert: false
-        });
+        .upload(filePath, file, { cacheControl: '3600', upsert: false });
 
       if (uploadError) throw uploadError;
 
-      // Get public URL
       const { data: { publicUrl } } = supabase.storage
         .from('products')
         .getPublicUrl(filePath);
@@ -137,8 +139,8 @@ export default function ProductForm({ onClose }: { onClose: () => void }) {
       set('image', publicUrl);
       setPreviewError(false);
     } catch (error: any) {
-      console.error('Error uploading image:', error.message);
-      alert('Erro ao fazer upload: ' + error.message + '\n\nCertifique-se de que o bucket "products" existe e é público no Supabase.');
+      console.error('Erro de Upload:', error.message);
+      alert('Upload falhou: ' + error.message);
     } finally {
       setUploading(false);
     }
@@ -146,7 +148,7 @@ export default function ProductForm({ onClose }: { onClose: () => void }) {
 
   const handleSave = () => {
     if (!form.name || !form.price || !form.image) {
-      alert('Preencha Nome, Preço e URL da Imagem.'); return;
+      alert('Campos obrigatórios faltando: Nome, Preço, Imagem.'); return;
     }
     saveProduct(form);
     onClose();
@@ -155,231 +157,158 @@ export default function ProductForm({ onClose }: { onClose: () => void }) {
   const isNew = !editingProduct;
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
-      style={{ background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(12px)' }}
-      onClick={(e) => e.target === e.currentTarget && onClose()}
-    >
-      <motion.div
-        initial={{ scale: 0.92, y: 20 }}
-        animate={{ scale: 1, y: 0 }}
-        exit={{ scale: 0.92, y: 20 }}
-        className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-white dark:bg-[#0d0d0d]"
-        style={{
-          border: '1px solid rgba(255,69,0,0.2)',
-          borderRadius: '4px',
-          boxShadow: '0 0 60px rgba(255,34,0,0.15)',
-        }}
-      >
-        {/* Header */}
-        <div className="sticky top-0 z-10 flex items-center justify-between px-6 py-4 border-b border-black/10 dark:border-white/[0.06] bg-white dark:bg-[#0d0d0d]">
-          <h2 className="text-2xl font-display tracking-[0.08em]">
-            <span className="text-black/30 dark:text-white/30">{isNew ? 'NOVO' : 'EDITAR'} </span>
-            <span className="text-transparent bg-clip-text bg-gradient-to-br from-[#FF0000] to-[#FFA500]">PRODUTO</span>
+    <div className="flex flex-col h-full">
+      {/* Header */}
+      <div className="sticky top-0 z-20 flex items-center justify-between px-10 py-8 border-b border-black/10 dark:border-white/10 bg-white/95 dark:bg-black/95 backdrop-blur-xl">
+        <div className="flex flex-col">
+          <h2 className="text-3xl font-bold tracking-[0.2em] uppercase italic">
+            {isNew ? 'Novo Produto' : 'Editar Produto'}
           </h2>
-          <div className="flex items-center gap-3">
-            <button 
-              onClick={() => {
-                setForm({
-                  ...newProduct(),
-                  name: 'CORTA-VENTO BONDS ELITE',
-                  subtitle: 'Black & Gold Edition',
-                  price: 449.90,
-                  category: 'Corta-Ventos',
-                  image: 'https://images.unsplash.com/photo-1556906781-9a412961a28c?w=800&q=90',
-                  description: 'Corta-vento de alta performance com detalhes em dourado refletivo. Resistente a água e vento.',
-                  sizes: ['P', 'M', 'G', 'GG'],
-                  colors: [{ name: 'Preto/Ouro', hex: '#d4af37' }],
-                  features: ['Refletivo Premium', 'Impermeável'],
-                  stock: 25
-                });
-                setPreviewError(false);
-              }}
-              className="px-3 py-1 text-[10px] border border-black/10 dark:border-white/10 text-black/40 dark:text-white/30 hover:text-black dark:hover:text-white hover:border-black/20 dark:hover:border-white/20 transition-all uppercase font-mono rounded-sm"
-            >
-              Carregar Modelo
-            </button>
-            <button onClick={onClose} className="p-1.5 text-black/40 dark:text-white/30 hover:text-black dark:hover:text-white transition-colors">
-              <X size={18} />
-            </button>
-          </div>
+          <span className="text-[9px] font-mono tracking-[0.5em] text-black/30 dark:text-white/20 uppercase mt-1">Gestão de Inventário</span>
         </div>
+        <div className="flex items-center gap-6">
+          <button 
+            onClick={() => {
+              setForm({
+                ...newProduct(),
+                name: 'SAMPLE PRODUCT X',
+                subtitle: 'Limited Edition Protocol',
+                price: 499.00,
+                category: 'Corta-Ventos',
+                image: 'https://images.unsplash.com/photo-1556906781-9a412961a28c?w=800&q=90',
+                description: 'High-performance urban wear designed for the elite. Refined textures and weather-resistant layering.',
+                sizes: ['M', 'G'],
+                colors: [{ name: 'Stealth Black', hex: '#000000' }],
+                features: ['Reflective Weave', 'Ergonomic Cut'],
+                stock: 25
+              });
+              setPreviewError(false);
+            }}
+            className="hidden md:block text-[9px] font-mono tracking-[0.3em] uppercase text-black/40 dark:text-white/40 hover:text-black dark:hover:text-white transition-colors"
+          >
+            [ Carregar Exemplo ]
+          </button>
+          <button onClick={onClose} className="w-12 h-12 flex items-center justify-center bg-black/5 dark:bg-white/5 text-black/40 dark:text-white/30 hover:bg-black dark:hover:bg-white hover:text-white dark:hover:text-black transition-all rounded-sm">
+            <X size={20} />
+          </button>
+        </div>
+      </div>
 
-        {/* Fire border */}
-        <div className="h-px" style={{ background: 'linear-gradient(90deg,#FF0000,#FF4500,#FFA500,transparent)' }} />
-
-        <div className="p-6 space-y-6">
-          {/* Image preview */}
-          <div className="relative aspect-[3/4] w-full max-w-xs mx-auto overflow-hidden bg-black/5 dark:bg-[#111] rounded-[3px]">
-            {form.image && !previewError
-              ? <img src={form.image} alt="preview" onError={() => setPreviewError(true)}
-                     className="w-full h-full object-cover" />
-              : <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
-                  <ImageIcon size={32} className="text-black/10 dark:text-white/10" />
-                  <span className="text-[10px] text-black/40 dark:text-white/20 font-mono">
-                    Cole a URL da imagem abaixo
-                  </span>
-                </div>
-            }
-          </div>
-
-          {/* Basic info */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <FInput label="Nome do Produto" value={form.name} onChange={(v) => set('name', v)} placeholder="CORTA-VENTO IGNITE" />
-            <FInput label="Subtítulo" value={form.subtitle} onChange={(v) => set('subtitle', v)} placeholder="Fire Edition" />
-          </div>
-
-          <div className="space-y-4">
-            <div className="flex items-end gap-2">
-              <div className="flex-1">
-                <FInput 
-                  label="URL da Imagem" 
-                  value={form.image}
-                  onChange={(v) => { set('image', v); setPreviewError(false); }}
-                  placeholder="https://images.unsplash.com/..." 
-                />
+      <div className="p-10 space-y-12 pb-32">
+        {/* visual Manifest */}
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-12">
+          <div className="md:col-span-4">
+            <div className="sticky top-10 space-y-6">
+              <div className="relative aspect-[3/4] w-full overflow-hidden bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 group">
+                {form.image && !previewError
+                  ? <img src={form.image} alt="preview" onError={() => setPreviewError(true)} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                  : <div className="absolute inset-0 flex flex-col items-center justify-center gap-4">
+                      <ImageIcon size={40} className="text-black/10 dark:text-white/10" />
+                      <span className="text-[10px] text-black/30 dark:text-white/20 font-mono tracking-widest uppercase">Sem Imagem</span>
+                    </div>
+                }
               </div>
               <div className="relative">
-                <input
-                  type="file"
-                  id="image-upload"
-                  accept="image/*"
-                  onChange={handleUpload}
-                  className="hidden"
-                  disabled={uploading}
-                />
-                <label
-                  htmlFor="image-upload"
-                  className={`flex items-center gap-2 px-4 py-2.5 cursor-pointer transition-all duration-200 font-body font-semibold tracking-[0.1em] text-[0.8rem] rounded-sm border border-fire-orange/40 text-fire-orange ${
-                    uploading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-fire-orange/10'
-                  }`}
-                >
-                  {uploading ? (
-                    <Loader2 size={14} className="animate-spin" />
-                  ) : (
-                    <Upload size={14} />
-                  )}
-                  {uploading ? 'SUBINDO...' : 'UPLOAD'}
+                <input type="file" id="image-upload" accept="image/*" onChange={handleUpload} className="hidden" disabled={uploading} />
+                <label htmlFor="image-upload" className="flex items-center justify-center gap-3 w-full py-4 border border-black dark:border-white text-black dark:text-white text-[10px] font-bold tracking-[0.3em] uppercase cursor-pointer hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-all duration-500">
+                  {uploading ? <Loader2 size={16} className="animate-spin" /> : <Upload size={16} />}
+                  {uploading ? 'Processando...' : 'Fazer Upload'}
                 </label>
               </div>
             </div>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-            <FInput label="Preço (R$)" type="number" value={form.price} onChange={(v) => set('price', parseFloat(v) || 0)} placeholder="349.90" />
-            <FInput label="Preço Original (R$)" type="number" value={form.originalPrice ?? ''} onChange={(v) => set('originalPrice', v ? parseFloat(v) : undefined)} placeholder="Opcional" />
-            <FInput label="Estoque (un)" type="number" value={form.stock} onChange={(v) => set('stock', parseInt(v) || 0)} placeholder="50" />
-          </div>
-
-          {/* Category + Tag */}
-          <div className="grid grid-cols-2 gap-4">
-            <label className="block">
-              <span className="block text-[10px] tracking-[0.2em] uppercase mb-1.5 text-black/50 dark:text-white/30 font-mono">Categoria</span>
-              <select value={form.category} onChange={(e) => set('category', e.target.value)}
-                      className="w-full px-3 py-2.5 text-black dark:text-white text-sm outline-none font-body bg-black/5 dark:bg-white/[0.03] border border-black/10 dark:border-white/[0.08] rounded-sm">
-                {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
-              </select>
-            </label>
-            <label className="block">
-              <span className="block text-[10px] tracking-[0.2em] uppercase mb-1.5 text-black/50 dark:text-white/30 font-mono">Badge / Tag</span>
-              <select value={form.tag ?? ''} onChange={(e) => set('tag', e.target.value || undefined)}
-                      className="w-full px-3 py-2.5 text-black dark:text-white text-sm outline-none font-body bg-black/5 dark:bg-white/[0.03] border border-black/10 dark:border-white/[0.08] rounded-sm">
-                {TAGS.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
-              </select>
-            </label>
-          </div>
-
-          {/* Description */}
-          <FInput label="Descrição" value={form.description} onChange={(v) => set('description', v)}
-                  placeholder="Descreva o produto..." textarea />
-
-          {/* Sizes */}
-          <div>
-            <span className="block text-[10px] tracking-[0.2em] uppercase mb-3 text-black/50 dark:text-white/30 font-mono">Tamanhos Disponíveis</span>
-            <div className="flex gap-2 flex-wrap">
-              {SIZES_ALL.map((sz) => {
-                const on = form.sizes.includes(sz);
-                return (
-                  <button key={sz} onClick={() => toggleSize(sz)}
-                          className="px-4 py-2 text-xs transition-all duration-200 font-mono rounded-sm"
-                          style={{
-                            border: on ? '1px solid #FF4500' : '1px solid rgba(128,128,128,0.2)',
-                            background: on ? 'rgba(255,69,0,0.12)' : 'rgba(128,128,128,0.05)',
-                            color: on ? '#FF4500' : 'rgba(128,128,128,0.6)',
-                            boxShadow: on ? '0 0 10px rgba(255,69,0,0.25)' : 'none',
-                          }}>
-                    {sz}
-                  </button>
-                );
-              })}
+          <div className="md:col-span-8 space-y-12">
+            {/* Identity */}
+            <div className="space-y-8">
+              <div className="flex items-center gap-3 text-[10px] font-mono tracking-[0.4em] text-black/20 dark:text-white/20 uppercase mb-4">
+                <CheckCircle2 size={12} /> Identificação
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
+                <FInput label="Nome do Produto" value={form.name} onChange={(v) => set('name', v)} placeholder="Ex: Corta-Vento VORTEX" />
+                <FInput label="Subtítulo / Modelo" value={form.subtitle} onChange={(v) => set('subtitle', v)} placeholder="Ex: Core Edition" />
+              </div>
+              <FInput label="URL da Imagem" value={form.image} onChange={(v) => { set('image', v); setPreviewError(false); }} placeholder="https://exemplo.com/imagem.jpg" />
             </div>
-          </div>
 
-          {/* Colors */}
-          <div>
-            <span className="block text-[10px] tracking-[0.2em] uppercase mb-3 text-black/50 dark:text-white/30 font-mono">Cores</span>
-            <div className="space-y-2 mb-3">
-              {form.colors.map((c, i) => (
-                <div key={i} className="flex items-center gap-3 px-3 py-2 bg-black/5 dark:bg-white/[0.02] border border-black/10 dark:border-white/[0.06] rounded-sm">
-                  <div className="w-5 h-5 rounded-full border border-black/20 dark:border-white/20 flex-shrink-0" style={{ background: c.hex }} />
-                  <span className="text-sm text-black/60 dark:text-white/60 flex-1 font-body">{c.name}</span>
-                  <button onClick={() => removeColor(i)} className="text-black/30 dark:text-white/20 hover:text-red-500 dark:hover:text-red-400 transition-colors"><Trash2 size={12} /></button>
+            {/* Valuation */}
+            <div className="space-y-8">
+              <div className="flex items-center gap-3 text-[10px] font-mono tracking-[0.4em] text-black/20 dark:text-white/20 uppercase mb-4 pt-8 border-t border-black/5 dark:border-white/5">
+                <Activity size={12} /> Valores e Estoque
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
+                <FInput label="Preço de Venda (R$)" type="number" value={form.price} onChange={(v) => set('price', parseFloat(v) || 0)} />
+                <FInput label="Preço Original (R$)" type="number" value={form.originalPrice ?? ''} onChange={(v) => set('originalPrice', v ? parseFloat(v) : undefined)} placeholder="Opcional (Desconto)" />
+                <FInput label="Unidades em Estoque" type="number" value={form.stock} onChange={(v) => set('stock', parseInt(v) || 0)} />
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
+                <div className="space-y-3">
+                  <span className="block text-[9px] tracking-[0.4em] uppercase text-black/30 dark:text-white/30 font-mono font-bold">Categoria</span>
+                  <select value={form.category} onChange={(e) => set('category', e.target.value)} className="w-full bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 px-5 py-4 text-xs font-bold uppercase tracking-widest outline-none focus:border-black dark:focus:border-white transition-all appearance-none">
+                    {CATEGORIES.map((c) => <option key={c} value={c} className="bg-white dark:bg-black text-black dark:text-white">{c}</option>)}
+                  </select>
                 </div>
-              ))}
+                <div className="space-y-3">
+                  <span className="block text-[9px] tracking-[0.4em] uppercase text-black/30 dark:text-white/30 font-mono font-bold">Tag / Destaque</span>
+                  <select value={form.tag ?? ''} onChange={(e) => set('tag', e.target.value || undefined)} className="w-full bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 px-5 py-4 text-xs font-bold uppercase tracking-widest outline-none focus:border-black dark:focus:border-white transition-all appearance-none">
+                    {TAGS.map((t) => <option key={t.value} value={t.value} className="bg-white dark:bg-black text-black dark:text-white">{t.label}</option>)}
+                  </select>
+                </div>
+              </div>
             </div>
-            <div className="flex gap-2">
-              <input value={newColorName} onChange={(e) => setNewColorName(e.target.value)} placeholder="Nome da cor"
-                     className="flex-1 px-3 py-2 text-sm text-black dark:text-white outline-none font-body bg-black/5 dark:bg-white/[0.02] border border-black/10 dark:border-white/[0.08] rounded-sm" />
-              <input type="color" value={newColorHex} onChange={(e) => setNewColorHex(e.target.value)}
-                     className="w-10 h-10 cursor-pointer rounded border border-black/10 dark:border-white/10 bg-transparent" />
-              <button onClick={addColor} className="px-3 py-2 text-xs font-bold text-black"
-                      style={{ background: 'linear-gradient(135deg,#FF0000,#FFA500)', borderRadius: '2px' }}>
-                <Plus size={14} />
-              </button>
-            </div>
-          </div>
 
-          {/* Features */}
-          <div>
-            <span className="block text-[10px] tracking-[0.2em] uppercase mb-3 text-black/50 dark:text-white/30 font-mono">Características</span>
-            <div className="flex flex-wrap gap-2 mb-3">
-              {form.features.map((f, i) => (
-                <span key={i} className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] bg-fire-orange/10 border border-fire-orange/30 text-fire-orange rounded-sm font-mono">
-                  {f}
-                  <button onClick={() => removeFeature(i)} className="hover:text-black dark:hover:text-white transition-colors"><X size={10} /></button>
-                </span>
-              ))}
-            </div>
-            <div className="flex gap-2">
-              <input value={newFeature} onChange={(e) => setNewFeature(e.target.value)}
-                     onKeyDown={(e) => e.key === 'Enter' && addFeature()}
-                     placeholder="Ex: Refletivo 360°"
-                     className="flex-1 px-3 py-2 text-sm text-black dark:text-white outline-none font-body bg-black/5 dark:bg-white/[0.02] border border-black/10 dark:border-white/[0.08] rounded-sm" />
-              <button onClick={addFeature} className="px-3 py-2 text-xs font-bold text-black"
-                      style={{ background: 'linear-gradient(135deg,#FF0000,#FFA500)', borderRadius: '2px' }}>
-                <Plus size={14} />
-              </button>
+            {/* Spec Manifest */}
+            <div className="space-y-8">
+              <div className="flex items-center gap-3 text-[10px] font-mono tracking-[0.4em] text-black/20 dark:text-white/20 uppercase mb-4 pt-8 border-t border-black/5 dark:border-white/5">
+                <Tag size={12} /> Especificações
+              </div>
+              <FInput label="Descrição do Produto" value={form.description} onChange={(v) => set('description', v)} textarea placeholder="Digite as especificações detalhadas..." />
+              
+              <div className="space-y-6">
+                <span className="block text-[9px] tracking-[0.4em] uppercase text-black/30 dark:text-white/30 font-mono font-bold text-center sm:text-left">Tamanhos Disponíveis</span>
+                <div className="flex flex-wrap gap-3">
+                  {SIZES_ALL.map((sz) => {
+                    const on = form.sizes.includes(sz);
+                    return (
+                      <button key={sz} onClick={() => toggleSize(sz)} className={`px-6 py-3 text-[10px] font-bold font-mono tracking-widest uppercase transition-all duration-500 rounded-sm ${on ? 'bg-black text-white dark:bg-white dark:text-black border-transparent shadow-[0_10px_20px_rgba(0,0,0,0.2)]' : 'bg-black/5 dark:bg-white/5 text-black/30 dark:text-white/20 border-transparent hover:text-black dark:hover:text-white'}`}>
+                        {sz}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className="space-y-6">
+                <span className="block text-[9px] tracking-[0.4em] uppercase text-black/30 dark:text-white/30 font-mono font-bold">Cores</span>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {form.colors.map((c, i) => (
+                    <div key={i} className="flex items-center gap-4 p-4 border border-black/5 dark:border-white/5 bg-black/5 dark:bg-white/5 group">
+                      <div className="w-8 h-8 rounded-full border border-black/10 dark:border-white/10" style={{ background: c.hex }} />
+                      <span className="flex-1 text-[10px] font-bold uppercase tracking-widest text-black dark:text-white">{c.name}</span>
+                      <button onClick={() => removeColor(i)} className="text-black/20 dark:text-white/20 hover:text-red-500 transition-colors"><Trash2 size={16} /></button>
+                    </div>
+                  ))}
+                </div>
+                <div className="flex gap-4 p-6 border border-dashed border-black/10 dark:border-white/10">
+                  <input value={newColorName} onChange={(e) => setNewColorName(e.target.value)} placeholder="Nome da Cor" className="flex-1 bg-transparent text-xs font-bold uppercase tracking-widest outline-none border-b border-black/10 dark:border-white/10 focus:border-black dark:focus:border-white py-2" />
+                  <input type="color" value={newColorHex} onChange={(e) => setNewColorHex(e.target.value)} className="w-10 h-10 cursor-pointer bg-transparent border-none" />
+                  <button onClick={addColor} className="w-10 h-10 flex items-center justify-center bg-black dark:bg-white text-white dark:text-black hover:scale-110 transition-transform"><Plus size={16} /></button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
+      </div>
 
-        {/* Footer actions */}
-        <div className="sticky bottom-0 flex gap-3 px-6 py-4 border-t border-black/10 dark:border-white/[0.06] bg-white dark:bg-[#0d0d0d]">
-          <button onClick={onClose}
-                  className="px-5 py-2.5 text-sm text-black/50 dark:text-white/40 border border-black/10 dark:border-white/10 hover:text-black dark:hover:text-white hover:border-black/20 dark:hover:border-white/20 transition-all font-body rounded-sm">
-            Cancelar
-          </button>
-          <motion.button onClick={handleSave} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
-                         className="flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-bold uppercase tracking-widest text-black font-body rounded-sm"
-                         style={{ background: 'linear-gradient(135deg,#FF0000,#FF4500,#FFA500)' }}>
-            <Save size={14} />
-            Salvar Produto
-          </motion.button>
-        </div>
-      </motion.div>
-    </motion.div>
+      {/* Footer sticky actions */}
+      <div className="fixed bottom-0 left-0 right-0 z-30 flex items-center justify-between px-10 py-6 border-t border-black/10 dark:border-white/10 bg-white dark:bg-black">
+        <button onClick={onClose} className="text-[10px] font-mono tracking-[0.4em] uppercase text-black/30 dark:text-white/30 hover:text-black dark:hover:text-white transition-colors uppercase font-bold">
+          [ Cancelar ]
+        </button>
+        <button onClick={handleSave} className="btn-premium px-12 flex items-center gap-4">
+          <Save size={18} /> Salvar Produto
+        </button>
+      </div>
+    </div>
   );
 }

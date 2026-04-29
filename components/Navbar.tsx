@@ -2,29 +2,54 @@
 
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ShoppingBag, Menu, X, Zap } from 'lucide-react';
+import { ShoppingBag, Menu, X, Zap, User, LogOut, Package } from 'lucide-react';
 import { useCart } from '@/store/useCart';
 import ClientOnly from '@/components/ClientOnly';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { createClient } from '@/lib/supabase/client';
+import { useRouter } from 'next/navigation';
 
 const navLinks = [
+  { label: 'Coleções', href: '/produtos' },
   { label: 'Drops', href: '/produtos' },
-  { label: 'Kits', href: '/produtos' },
-  { label: 'Collab', href: '#' },
-  { label: 'About', href: '#' },
+  { label: 'Sobre', href: '/sobre' },
 ];
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [user, setUser] = useState<any>(null);
   const { toggleCart, totalItems } = useCart();
   const count = totalItems();
+  const supabase = createClient();
+  const router = useRouter();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 30);
     window.addEventListener('scroll', onScroll, { passive: true });
-    return () => window.removeEventListener('scroll', onScroll);
+    
+    // Check initial session
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      setUser(user);
+    });
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+      subscription.unsubscribe();
+    };
   }, []);
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    router.push('/');
+    router.refresh();
+    window.location.reload();
+  };
 
   return (
     <>
@@ -43,24 +68,20 @@ export default function Navbar() {
             href="/"
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
-            className="flex items-center gap-2 group"
+            className="flex items-center gap-3 group"
           >
-            <div className="w-8 h-8 relative">
-              <div className="absolute inset-0 bg-fire-gradient rounded-sm rotate-12 group-hover:rotate-[20deg] transition-transform duration-300" />
-              <div className="absolute inset-0 flex items-center justify-center">
-                <Zap size={16} className="text-black font-bold" fill="black" />
-              </div>
+            <div className="flex flex-col items-start leading-none">
+              <span
+                className="font-display text-3xl tracking-tighter text-black dark:text-white"
+              >
+                BONDS
+              </span>
+              <span
+                className="text-[9px] font-mono tracking-[0.4em] text-black/40 dark:text-white/30 uppercase -mt-0.5"
+              >
+                AGENCE
+              </span>
             </div>
-            <span
-              className="text-fire-animate font-display text-2xl tracking-wider leading-none"
-            >
-              BONDS
-            </span>
-            <span
-              className="text-[10px] font-mono tracking-[0.3em] text-black/50 dark:text-white/30 hidden sm:block mt-1 uppercase"
-            >
-              AGENCE
-            </span>
           </motion.a>
 
           {/* Desktop Nav Links */}
@@ -74,12 +95,12 @@ export default function Navbar() {
               >
                 <a
                   href={link.href}
-                  className="text-sm font-body font-semibold tracking-[0.15em] text-black/70 dark:text-white/60 hover:text-black dark:hover:text-white
-                             uppercase transition-colors duration-200 relative group"
+                  className="text-xs font-body font-bold tracking-[0.2em] text-black/60 dark:text-white/50 hover:text-black dark:hover:text-white
+                             uppercase transition-colors duration-300 relative group"
                 >
                   {link.label}
-                  <span className="absolute -bottom-0.5 left-0 right-0 h-px bg-fire-gradient scale-x-0
-                                   group-hover:scale-x-100 transition-transform duration-300 origin-left" />
+                  <span className="absolute -bottom-1 left-0 right-0 h-px bg-black dark:bg-white scale-x-0
+                                   group-hover:scale-x-100 transition-transform duration-500 origin-left" />
                 </a>
               </motion.li>
             ))}
@@ -89,19 +110,59 @@ export default function Navbar() {
           <div className="flex items-center gap-3">
             {/* Promo Badge */}
             <motion.div
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.5 }}
-              className="hidden sm:flex items-center gap-1 clip-badge bg-fire-gradient px-3 py-1"
+              className="hidden lg:flex items-center gap-2 border border-black/10 dark:border-white/10 px-3 py-1 bg-black/5 dark:bg-white/5"
             >
+              <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
               <span
-                className="text-[10px] font-mono font-bold text-black tracking-widest uppercase"
+                className="text-[9px] font-mono font-bold text-black/60 dark:text-white/40 tracking-[0.2em] uppercase"
               >
-                FRETE GRÁTIS
+                ENVIO 24H
               </span>
             </motion.div>
 
             <ThemeToggle />
+
+            {/* Auth Section */}
+            <div className="hidden sm:flex items-center gap-2">
+              {user ? (
+                <div className="flex items-center gap-3">
+                  <motion.a
+                    href="/profile"
+                    whileHover={{ scale: 1.05 }}
+                    className="flex items-center gap-2 px-3 py-1.5 rounded-sm border border-black/10 dark:border-white/10 bg-black/[0.03] dark:bg-white/[0.03] text-[10px] font-mono font-bold tracking-widest text-black/60 dark:text-white/40 hover:text-black dark:hover:text-white transition-all"
+                  >
+                    PERFIL
+                  </motion.a>
+                  <motion.a
+                    href="/orders"
+                    whileHover={{ scale: 1.05 }}
+                    className="flex items-center gap-2 px-3 py-1.5 rounded-sm border border-black/10 dark:border-white/10 bg-black/[0.03] dark:bg-white/[0.03] text-[10px] font-mono font-bold tracking-widest text-black/60 dark:text-white/40 hover:text-black dark:hover:text-white transition-all"
+                  >
+                    MEUS PEDIDOS
+                  </motion.a>
+                  <button
+                    onClick={handleLogout}
+                    className="p-2 text-black/50 dark:text-white/30 hover:text-black dark:hover:text-white transition-colors"
+                    title="Sair"
+                  >
+                    <LogOut size={18} />
+                  </button>
+                </div>
+              ) : (
+                <motion.a
+                  href="/login"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="flex items-center gap-2 px-4 py-2 bg-black dark:bg-white text-white dark:text-black text-[10px] font-mono font-bold tracking-[0.2em] uppercase transition-all"
+                >
+                  <User size={12} />
+                  LOGIN
+                </motion.a>
+              )}
+            </div>
 
             {/* Cart Button */}
             <motion.button
@@ -109,7 +170,7 @@ export default function Navbar() {
               whileTap={{ scale: 0.95 }}
               onClick={toggleCart}
               className="relative p-2 rounded-sm border border-black/10 dark:border-white/10 bg-black/[0.03] dark:bg-white/[0.03]
-                         hover:border-fire-orange/40 hover:bg-fire-orange/5 transition-all duration-300 group"
+                         hover:border-black/30 dark:hover:border-white/30 hover:bg-black/5 dark:hover:bg-white/5 transition-all duration-300 group"
               aria-label="Abrir carrinho"
             >
               <ShoppingBag size={20} className="text-black/70 dark:text-white/70 group-hover:text-black dark:group-hover:text-white transition-colors" />
@@ -121,8 +182,8 @@ export default function Navbar() {
                     initial={{ scale: 0, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
                     exit={{ scale: 0, opacity: 0 }}
-                    className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-fire-gradient rounded-full
-                               flex items-center justify-center text-[10px] font-bold text-black font-mono"
+                    className="absolute -top-1 -right-1 w-4 h-4 bg-black dark:bg-white rounded-full
+                               flex items-center justify-center text-[9px] font-bold text-white dark:text-black font-mono"
                   >
                     {count > 9 ? '9+' : count}
                   </motion.span>
@@ -167,7 +228,7 @@ export default function Navbar() {
                     onClick={() => setMenuOpen(false)}
                     className="flex items-center gap-4 py-3 border-b border-black/[0.05] dark:border-white/[0.05] group"
                   >
-                    <span className="w-1 h-1 rounded-full bg-fire-orange group-hover:w-6 transition-all duration-300" />
+                    <span className="w-1 h-1 rounded-full bg-black dark:bg-white group-hover:w-6 transition-all duration-300" />
                     <span
                       className="text-2xl font-display tracking-wider text-black/80 dark:text-white/80 group-hover:text-black dark:group-hover:text-white transition-colors"
                     >
@@ -176,6 +237,31 @@ export default function Navbar() {
                   </a>
                 </motion.li>
               ))}
+
+              {/* Mobile Auth Links */}
+              <li className="pt-6 mt-4 border-t border-black/10 dark:border-white/10">
+                {user ? (
+                  <div className="flex flex-col gap-4">
+                    <a href="/profile" onClick={() => setMenuOpen(false)} className="flex items-center justify-between group">
+                      <span className="text-xl font-display tracking-widest text-black dark:text-white">PERFIL</span>
+                      <User size={18} className="text-black/40 dark:text-white/40" />
+                    </a>
+                    <a href="/orders" onClick={() => setMenuOpen(false)} className="flex items-center justify-between group">
+                      <span className="text-xl font-display tracking-widest text-black dark:text-white">MEUS PEDIDOS</span>
+                      <Package size={18} className="text-black/40 dark:text-white/40" />
+                    </a>
+                    <button onClick={() => { handleLogout(); setMenuOpen(false); }} className="flex items-center justify-between group text-rose-500">
+                      <span className="text-xl font-display tracking-widest">SAIR</span>
+                      <LogOut size={18} />
+                    </button>
+                  </div>
+                ) : (
+                  <a href="/login" onClick={() => setMenuOpen(false)} className="flex items-center justify-between group py-2">
+                    <span className="text-xl font-display tracking-widest text-black dark:text-white">LOGIN</span>
+                    <User size={18} className="text-black/40 dark:text-white/40" />
+                  </a>
+                )}
+              </li>
             </ul>
           </motion.div>
         )}

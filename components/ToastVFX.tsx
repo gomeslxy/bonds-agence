@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CheckCircle, ShoppingBag, X } from 'lucide-react';
+import { Check, ShoppingBag, X, AlertTriangle } from 'lucide-react';
 
 /* ─── Types ────────────────────────────────────────────── */
 export type ToastType = 'success' | 'cart' | 'error';
@@ -14,7 +14,7 @@ export interface Toast {
   type: ToastType;
 }
 
-/* ─── Global emitter (no context needed) ──────────────── */
+/* ─── Global emitter ──────────────────────────────────── */
 type Listener = (t: Toast) => void;
 const listeners: Listener[] = [];
 
@@ -23,114 +23,57 @@ export function fireToast(message: string, sub?: string, type: ToastType = 'succ
   listeners.forEach((fn) => fn(toast));
 }
 
-/* ─── Ember particle ──────────────────────────────────── */
-function Ember({ delay }: { delay: number }) {
-  const angle = Math.random() * Math.PI * 2;
-  const dist  = 60 + Math.random() * 80;
-  const size  = 2 + Math.random() * 4;
-  const color = ['#FF0000', '#FF4500', '#FFA500', '#FFD700'][Math.floor(Math.random() * 4)];
-
-  return (
-    <motion.span
-      className="absolute rounded-full pointer-events-none"
-      style={{ width: size, height: size, background: color, top: '50%', left: '50%', boxShadow: `0 0 ${size * 2}px ${color}` }}
-      initial={{ opacity: 1, x: 0, y: 0, scale: 1 }}
-      animate={{
-        opacity: 0,
-        x: Math.cos(angle) * dist,
-        y: Math.sin(angle) * dist - 20,
-        scale: 0,
-      }}
-      transition={{ duration: 0.8 + Math.random() * 0.4, delay, ease: 'easeOut' }}
-    />
-  );
-}
-
 /* ─── Single Toast Card ───────────────────────────────── */
 function ToastCard({ toast, onDismiss }: { toast: Toast; onDismiss: (id: string) => void }) {
-  const [burst, setBurst] = useState(false);
-
   useEffect(() => {
-    setBurst(true);
-    const t = setTimeout(() => onDismiss(toast.id), 3800);
+    const t = setTimeout(() => onDismiss(toast.id), 4000);
     return () => clearTimeout(t);
   }, [toast.id, onDismiss]);
 
-  const Icon = toast.type === 'cart' ? ShoppingBag : CheckCircle;
+  const Icon = toast.type === 'cart' ? ShoppingBag : toast.type === 'error' ? AlertTriangle : Check;
 
   return (
     <motion.div
       layout
-      initial={{ opacity: 0, y: 60, scale: 0.85, filter: 'blur(8px)' }}
-      animate={{ opacity: 1, y: 0, scale: 1, filter: 'blur(0px)' }}
-      exit={{ opacity: 0, y: -20, scale: 0.9, filter: 'blur(4px)' }}
-      transition={{ type: 'spring', damping: 22, stiffness: 280 }}
-      className="relative flex items-center gap-3 min-w-[280px] max-w-xs px-4 py-3 overflow-hidden"
-      style={{
-        background: 'rgba(8,8,8,0.96)',
-        border: '1px solid rgba(255,69,0,0.25)',
-        borderRadius: '3px',
-        backdropFilter: 'blur(20px)',
-        boxShadow: '0 0 30px rgba(255,34,0,0.2), 0 8px 32px rgba(0,0,0,0.6)',
-      }}
+      initial={{ opacity: 0, x: 20, scale: 0.95 }}
+      animate={{ opacity: 1, x: 0, scale: 1 }}
+      exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.2 } }}
+      className="relative flex items-center gap-4 min-w-[300px] max-w-sm px-5 py-4 bg-white text-black shadow-[0_20px_50px_rgba(0,0,0,0.3)] pointer-events-auto border border-black/5"
     >
-      {/* Animated fire border top */}
+      {/* Progress Bar */}
       <motion.div
-        className="absolute top-0 left-0 right-0 h-px"
-        initial={{ scaleX: 1 }}
-        animate={{ scaleX: 0 }}
-        transition={{ duration: 3.8, ease: 'linear' }}
-        style={{
-          background: 'linear-gradient(90deg, #FF0000, #FF4500, #FFA500)',
-          transformOrigin: 'left',
-        }}
+        className="absolute bottom-0 left-0 h-[2px] bg-black/10"
+        initial={{ width: '100%' }}
+        animate={{ width: '0%' }}
+        transition={{ duration: 4, ease: 'linear' }}
       />
 
-      {/* Icon with ember burst */}
-      <div className="relative flex-shrink-0">
-        <div
-          className="w-9 h-9 flex items-center justify-center"
-          style={{
-            background: 'linear-gradient(135deg, rgba(255,69,0,0.2), rgba(255,69,0,0.05))',
-            border: '1px solid rgba(255,69,0,0.3)',
-            borderRadius: '2px',
-          }}
-        >
-          <Icon size={16} style={{ color: '#FF4500' }} />
-        </div>
-        {burst && [...Array(10)].map((_, i) => <Ember key={i} delay={i * 0.04} />)}
+      <div className="flex-shrink-0 w-10 h-10 bg-black flex items-center justify-center text-white">
+        <Icon size={18} />
       </div>
 
-      {/* Text */}
       <div className="flex-1 min-w-0">
-        <p
-          className="text-sm text-white font-semibold leading-tight truncate"
-          style={{ fontFamily: "'Barlow Condensed', system-ui, sans-serif", fontWeight: 700, letterSpacing: '0.05em' }}
-        >
+        <p className="text-[11px] font-bold uppercase tracking-widest leading-tight truncate">
           {toast.message}
         </p>
         {toast.sub && (
-          <p
-            className="text-[10px] mt-0.5 truncate"
-            style={{ fontFamily: "'Space Mono', monospace", color: '#FF450088' }}
-          >
+          <p className="text-[9px] font-mono uppercase tracking-widest text-black/40 mt-1 truncate">
             {toast.sub}
           </p>
         )}
       </div>
 
-      {/* Dismiss */}
       <button
         onClick={() => onDismiss(toast.id)}
-        className="flex-shrink-0 text-white/20 hover:text-white/60 transition-colors"
+        className="flex-shrink-0 text-black/20 hover:text-black transition-colors p-1"
       >
-        <X size={12} />
+        <X size={14} />
       </button>
     </motion.div>
   );
 }
 
-/* ─── Provider / Mount this once in layout ────────────── */
+/* ─── Provider ─────────────────────────────────────────── */
 export default function ToastVFXProvider() {
   const [toasts, setToasts] = useState<Toast[]>([]);
 
@@ -139,18 +82,19 @@ export default function ToastVFXProvider() {
   }, []);
 
   useEffect(() => {
-    const handler: Listener = (t) => setToasts((prev) => [...prev.slice(-3), t]);
+    const handler: Listener = (t) => setToasts((prev) => [...prev.slice(-2), t]);
     listeners.push(handler);
-    return () => { const i = listeners.indexOf(handler); if (i > -1) listeners.splice(i, 1); };
+    return () => { 
+      const i = listeners.indexOf(handler); 
+      if (i > -1) listeners.splice(i, 1); 
+    };
   }, []);
 
   return (
-    <div className="fixed bottom-6 right-6 z-[200] flex flex-col gap-3 items-end pointer-events-none">
+    <div className="fixed top-24 right-6 z-[999] flex flex-col gap-4 items-end pointer-events-none">
       <AnimatePresence mode="popLayout">
         {toasts.map((t) => (
-          <div key={t.id} className="pointer-events-auto">
-            <ToastCard toast={t} onDismiss={dismiss} />
-          </div>
+          <ToastCard key={t.id} toast={t} onDismiss={dismiss} />
         ))}
       </AnimatePresence>
     </div>

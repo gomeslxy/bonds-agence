@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
-import { supabase } from '@/lib/supabase';
+import { supabaseAdmin } from '@/lib/supabase/admin';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
   apiVersion: '2022-11-15' as any,
@@ -27,7 +27,7 @@ export async function POST(req: Request) {
     const orderId = session.metadata?.orderId;
 
     if (orderId) {
-      const { error } = await supabase
+      const { error } = await supabaseAdmin
         .from('orders')
         .update({ status: 'Pago' })
         .eq('id', orderId);

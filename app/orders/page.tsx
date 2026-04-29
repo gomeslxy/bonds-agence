@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '@/lib/supabase';
 import { formatCurrency, validateCPF } from '@/lib/utils';
@@ -8,6 +8,8 @@ import { fireToast } from '@/components/ToastVFX';
 import Link from 'next/link';
 import { Search, Package, Calendar, ChevronRight, ArrowLeft } from 'lucide-react';
 import Navbar from '@/components/Navbar';
+import { createClient } from '@/lib/supabase/client';
+import { useRouter } from 'next/navigation';
 
 const formatCPF = (v: string) => {
   v = v.replace(/\D/g, '');
@@ -19,47 +21,32 @@ const formatCPF = (v: string) => {
 };
 
 export default function OrdersPage() {
-  const [query, setQuery] = useState('');
-  const [searchType, setSearchType] = useState<'email' | 'cpf' | 'name'>('email');
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [orders, setOrders] = useState<any[]>([]);
-  const [searched, setSearched] = useState(false);
+  const [user, setUser] = useState<any>(null);
+  const supabaseClient = createClient();
+  const router = useRouter();
 
-  const findOrders = async () => {
-    if (!query || query.length < 3) return;
-
-    if (searchType === 'cpf' && !validateCPF(query)) {
-      fireToast('CPF Inválido', 'O CPF informado não é válido.');
-      return;
-    }
-
-    setLoading(true);
-    setSearched(true);
-    
-    try {
-      let q = supabase.from('orders').select('*');
-      const trimmed = query.trim();
-      
-      if (searchType === 'email') {
-        q = q.eq('customer_email', trimmed);
-      } else if (searchType === 'cpf') {
-        const clean = trimmed.replace(/\D/g, '');
-        const masked = formatCPF(clean);
-        // Search for either masked or unmasked version
-        q = q.or(`customer_cpf.eq.${clean},customer_cpf.eq.${masked}`);
-      } else {
-        q = q.ilike('customer_name', `%${trimmed}%`);
+  useEffect(() => {
+    const init = async () => {
+      const { data: { user } } = await supabaseClient.auth.getUser();
+      if (!user) {
+        router.push('/login?redirectTo=/orders');
+        return;
       }
-
-      const { data, error } = await q.order('created_at', { ascending: false });
+      setUser(user);
+      
+      const { data, error } = await supabaseClient
+        .from('orders')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
 
       if (data) setOrders(data);
-    } catch (err) {
-      console.error(err);
-    } finally {
       setLoading(false);
-    }
-  };
+    };
+    init();
+  }, []);
 
   return (
     <main className="min-h-screen bg-white dark:bg-black text-black dark:text-white selection:bg-fire-orange/30">
@@ -78,56 +65,7 @@ export default function OrdersPage() {
           <h1 className="text-6xl mb-4 font-display tracking-tight text-black dark:text-white uppercase">
             MEUS <span className="text-fire-glow">PEDIDOS</span>
           </h1>
-          <p className="text-black/50 dark:text-white/40 mb-8 font-light max-w-md font-body">Consulte o status e histórico de suas compras.</p>
-
-          <div className="flex gap-2 mb-6">
-            {[
-              { id: 'email', label: 'E-mail' },
-              { id: 'cpf', label: 'CPF' },
-              { id: 'name', label: 'Nome' },
-            ].map((t) => (
-              <button
-                key={t.id}
-                onClick={() => { setSearchType(t.id as any); setQuery(''); }}
-                className={`px-4 py-2 text-[10px] font-mono tracking-widest uppercase transition-all rounded-sm border ${
-                  searchType === t.id 
-                    ? 'bg-fire-orange text-black border-fire-orange' 
-                    : 'bg-transparent text-black/40 dark:text-white/30 border-black/10 dark:border-white/10 hover:border-fire-orange/40'
-                }`}
-              >
-                {t.label}
-              </button>
-            ))}
-          </div>
-
-          <div className="flex gap-4 mb-16">
-            <div className="flex-1 relative">
-              <input
-                type="text"
-                placeholder={
-                  searchType === 'email' ? 'seu@email.com' :
-                  searchType === 'cpf' ? '000.000.000-00' : 'Seu nome completo'
-                }
-                value={query}
-                onChange={(e) => {
-                  let val = e.target.value;
-                  if (searchType === 'cpf') val = formatCPF(val);
-                  setQuery(val);
-                }}
-                onKeyDown={(e) => e.key === 'Enter' && findOrders()}
-                className="w-full bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 px-6 py-4 rounded-sm outline-none focus:border-fire-orange/50 transition-all font-mono text-sm text-black dark:text-white"
-              />
-            </div>
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={findOrders}
-              disabled={loading}
-              className="px-8 btn-fire text-white font-bold uppercase tracking-widest text-sm rounded-sm disabled:opacity-50 font-body"
-            >
-              {loading ? <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin" /> : <Search size={20} />}
-            </motion.button>
-          </div>
+          <p className="text-black/50 dark:text-white/40 mb-12 font-light max-w-md font-body">Histórico completo de suas compras na Bonds Agence.</p>
         </motion.div>
 
         <div className="space-y-4">
@@ -174,13 +112,16 @@ export default function OrdersPage() {
                   </Link>
                 </motion.div>
               ))
-            ) : searched ? (
+            ) : (
               <motion.div key="empty" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center py-20 border border-dashed border-black/10 dark:border-white/10 rounded-sm">
-                <p className="text-black/40 dark:text-white/20 font-mono text-sm tracking-widest uppercase">
-                  Nenhum pedido encontrado para este {searchType === 'email' ? 'e-mail' : searchType === 'cpf' ? 'CPF' : 'nome'}.
+                <p className="text-black/40 dark:text-white/20 font-mono text-[10px] tracking-widest uppercase">
+                  VOCÊ AINDA NÃO POSSUI PEDIDOS.
                 </p>
+                <Link href="/produtos" className="inline-block mt-4 text-fire-orange font-mono text-[10px] tracking-widest hover:underline">
+                  EXPLORAR PRODUTOS
+                </Link>
               </motion.div>
-            ) : null}
+            )}
           </AnimatePresence>
         </div>
       </div>

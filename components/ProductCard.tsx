@@ -4,7 +4,7 @@ import { useState, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ShoppingBag, Star, Zap } from 'lucide-react';
+import { ShoppingBag, Star, Plus } from 'lucide-react';
 import { type Product } from '@/data/products';
 import { useCart } from '@/store/useCart';
 import { fireToast } from '@/components/ToastVFX';
@@ -50,168 +50,97 @@ export default function ProductCard({ product, index = 0 }: Props) {
   }, []);
 
   return (
-    <Link href={`/product/${product.id}`} className="block">
+    <Link href={`/product/${product.id}`} className="group block">
       <motion.article
-        initial={{ opacity: 0, y: 40 }}
+        initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, margin: '-60px' }}
+        viewport={{ once: true, margin: '-40px' }}
         transition={{
           duration: 0.6,
-          delay: index * 0.1,
-          ease: [0.22, 1, 0.36, 1],
+          delay: (index % 3) * 0.1,
+          ease: [0.16, 1, 0.3, 1],
         }}
-        className="product-card-wrap group cursor-pointer"
+        className="product-card border border-white/5 hover:border-white/20 transition-all duration-500"
       >
-        {/* Image container */}
-        <div className="relative overflow-hidden aspect-[3/4] bg-gray-100 dark:bg-[#0d0d0d]">
-          <div className="card-image absolute inset-0">
-            <Image
-              src={product.image}
-              alt={product.name}
-              fill
-              sizes="(max-width:768px) 100vw, (max-width:1200px) 50vw, 33vw"
-              className="object-cover object-top"
-              priority={index < 2}
-            />
-          </div>
-
-          {/* Gradient overlay */}
-          <div
-            className="absolute inset-0 pointer-events-none"
-            style={{
-              background:
-                'linear-gradient(180deg, transparent 40%, rgba(0,0,0,0.6) 75%, rgba(0,0,0,0.85) 100%)',
-            }}
+        {/* Image Container */}
+        <div className="product-image-container aspect-[4/5]">
+          <Image
+            src={product.image}
+            alt={product.name}
+            fill
+            sizes="(max-width:768px) 50vw, 33vw"
+            className="product-image"
+            priority={index < 4}
           />
+          
+          {/* Overlay for added state */}
+          <motion.div 
+            animate={{ opacity: added ? 1 : 0 }}
+            className="absolute inset-0 bg-white/10 backdrop-blur-sm flex items-center justify-center z-20 pointer-events-none"
+          >
+            <div className="bg-white text-black p-2 rounded-full">
+              <Plus size={24} className="rotate-45" />
+            </div>
+          </motion.div>
 
-          {/* Inner glow */}
-          <div className="card-glow" />
-
-          {/* Tag badge */}
-          {product.tag && (
-            <motion.div
-              initial={{ scale: 0, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ delay: index * 0.1 + 0.3 }}
-              className="absolute top-3 left-3 clip-badge px-3 py-1 z-10"
-              style={{ background: product.tagColor ?? '#FF0000' }}
-            >
-              <span
-                className="text-[10px] font-bold text-black tracking-widest font-mono"
-              >
+          {/* Badges */}
+          <div className="absolute top-2 left-2 flex flex-col gap-1.5 z-10">
+            {product.tag && (
+              <span className="bg-white text-black text-[9px] font-bold tracking-[0.2em] px-2 py-1 uppercase">
                 {product.tag}
               </span>
-            </motion.div>
-          )}
-
-          {/* Discount badge */}
-          {discount && (
-            <div className="absolute top-3 right-3 w-10 h-10 rounded-full bg-black/80 border border-white/10
-                            flex items-center justify-center z-10">
-              <span
-                className="text-[9px] font-bold leading-tight text-center font-mono text-fire-amber"
-              >
+            )}
+            {discount && (
+              <span className="bg-black/80 text-white text-[9px] font-bold tracking-[0.2em] px-2 py-1 uppercase border border-white/10">
                 -{discount}%
               </span>
-            </div>
-          )}
-
-          {/* Stock warning */}
-          {product.stock <= 20 && (
-            <div className="absolute bottom-[72px] left-3 right-3 z-10">
-              <div className="flex items-center gap-1.5">
-                <div
-                  className="w-1.5 h-1.5 rounded-full animate-pulse"
-                  style={{ background: '#FF0000' }}
-                />
-                <span
-                  className="text-[10px] tracking-wider font-mono text-fire-orange"
-                >
-                  Últimas {product.stock} unidades
-                </span>
-              </div>
-            </div>
-          )}
-
-          {/* Hover quick-add button */}
-          <div className="card-overlay-btn absolute bottom-4 left-3 right-3 z-10">
-            <motion.button
-              whileTap={{ scale: 0.97 }}
-              onClick={handleAdd}
-              className="w-full py-3 flex items-center justify-center gap-2
-                         btn-fire font-body font-bold tracking-widest text-sm uppercase rounded-sm text-white"
-            >
-              {added ? (
-                <>
-                  <Zap size={14} className="relative z-10" fill="black" />
-                  <span className="relative z-10">Adicionado!</span>
-                </>
-              ) : (
-                <>
-                  <ShoppingBag size={14} className="relative z-10" />
-                  <span className="relative z-10">Adicionar · {selectedSize}</span>
-                </>
-              )}
-            </motion.button>
+            )}
           </div>
 
-          {/* Neon border flash on added */}
-          {added && (
-            <motion.div
-              initial={{ opacity: 1 }}
-              animate={{ opacity: 0 }}
-              transition={{ duration: 0.8 }}
-              className="absolute inset-0 pointer-events-none rounded-[inherit]"
-              style={{ boxShadow: 'inset 0 0 30px rgba(255,69,0,0.5)' }}
-            />
-          )}
+          {/* Quick Add (Desktop only for better UX) */}
+          <div className="hidden lg:block absolute bottom-0 left-0 right-0 p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-500 z-10">
+            <button
+              onClick={handleAdd}
+              className="w-full bg-white text-black py-3 text-[10px] font-bold tracking-[0.2em] uppercase hover:bg-white/90 transition-colors"
+            >
+              ADICIONAR · {selectedSize}
+            </button>
+          </div>
         </div>
 
-        {/* Card Body */}
-        <div className="p-4 space-y-3">
-          {/* Category */}
-          <div className="flex items-center justify-between">
-            <span
-              className="text-[10px] font-mono tracking-[0.3em] uppercase text-fire-orange/80"
-            >
-              {product.category}
-            </span>
-            <div className="flex items-center gap-0.5">
-              {[...Array(5)].map((_, i) => (
-                <Star
-                  key={i}
-                  size={8}
-                  fill={i < 4 ? '#FFA500' : 'transparent'}
-                  stroke={i < 4 ? '#FFA500' : '#ffffff22'}
-                />
-              ))}
+        {/* Content */}
+        <div className="p-4 bg-black">
+          <div className="flex items-start justify-between gap-4 mb-2">
+            <div>
+              <h3 className="text-sm font-bold tracking-tight text-white/90 group-hover:text-white transition-colors line-clamp-1 uppercase">
+                {product.name}
+              </h3>
+              <p className="text-[10px] text-white/40 font-mono tracking-widest mt-0.5 uppercase">
+                {product.category}
+              </p>
+            </div>
+            <div className="text-right">
+              <p className="text-sm font-bold text-white tracking-tight">
+                {fmt(product.price)}
+              </p>
+              {product.originalPrice && (
+                <p className="text-[10px] text-white/30 line-through">
+                  {fmt(product.originalPrice)}
+                </p>
+              )}
             </div>
           </div>
 
-          {/* Name */}
-          <div>
-            <h3
-              className="text-xl font-display leading-tight text-black dark:text-white group-hover:text-fire-amber transition-colors duration-300 tracking-[0.05em]"
-            >
-              {product.name}
-            </h3>
-            <p
-              className="text-[11px] font-body text-black/50 dark:text-white/30 mt-0.5"
-            >
-              {product.subtitle}
-            </p>
-          </div>
-
-          {/* Size selector */}
-          <div className="flex items-center gap-1.5 flex-wrap">
+          {/* Size Pills */}
+          <div className="flex items-center gap-1 mt-4 overflow-x-auto no-scrollbar">
             {product.sizes.map((sz) => (
               <button
                 key={sz}
                 onClick={(e) => handleSizeClick(e, sz)}
-                className={`px-2.5 py-1 text-[10px] font-mono border transition-all duration-200 rounded-sm ${
+                className={`flex-shrink-0 w-8 h-8 flex items-center justify-center text-[9px] font-bold transition-all border ${
                   selectedSize === sz
-                    ? 'border-fire-orange text-fire-orange bg-fire-orange/10'
-                    : 'border-black/10 dark:border-white/10 text-black/40 dark:text-white/40 hover:border-black/30 dark:hover:border-white/30 hover:text-black/60 dark:hover:text-white/60'
+                    ? 'border-white bg-white text-black'
+                    : 'border-white/10 text-white/40 hover:border-white/30'
                 }`}
               >
                 {sz}
@@ -219,35 +148,13 @@ export default function ProductCard({ product, index = 0 }: Props) {
             ))}
           </div>
 
-          {/* Price Row */}
-          <div className="flex items-end justify-between pt-1">
-            <div>
-              <div
-                className="text-xl font-display leading-none text-fire-glow"
-              >
-                {fmt(product.price)}
-              </div>
-              {product.originalPrice && (
-                <div
-                  className="text-[11px] font-mono text-black/30 dark:text-white/25 line-through mt-0.5"
-                >
-                  {fmt(product.originalPrice)}
-                </div>
-              )}
-            </div>
-
-            {/* Color dots */}
-            <div className="flex items-center gap-1">
-              {product.colors.slice(0, 3).map((c) => (
-                <div
-                  key={c.hex}
-                  title={c.name}
-                  className="w-3 h-3 rounded-full border border-black/10 dark:border-white/10"
-                  style={{ background: c.hex }}
-                />
-              ))}
-            </div>
-          </div>
+          {/* Mobile Add Button (Visible only on mobile for better conversion) */}
+          <button
+            onClick={handleAdd}
+            className="lg:hidden w-full mt-4 bg-white/5 border border-white/10 text-white py-3 text-[9px] font-bold tracking-[0.2em] uppercase active:bg-white active:text-black transition-all"
+          >
+            {added ? 'ADICIONADO' : 'ADICIONAR'}
+          </button>
         </div>
       </motion.article>
     </Link>

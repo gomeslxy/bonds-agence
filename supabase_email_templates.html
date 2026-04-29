@@ -1,0 +1,148 @@
+<!-- ============================================================ -->
+<!-- TEMPLATE 1: CONFIRM SIGNUP (OTP de 6 dígitos)              -->
+<!-- Supabase > Authentication > Email Templates > Confirm signup-->
+<!-- ============================================================ -->
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="margin:0;padding:0;background:#0a0a0a;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#0a0a0a;min-height:100vh;">
+    <tr><td align="center" style="padding:48px 16px;">
+      <table width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%;">
+
+        <!-- Borda gradiente topo -->
+        <tr><td style="background:linear-gradient(90deg,#FF0000,#FF4500,#FFA500);height:3px;border-radius:8px 8px 0 0;"></td></tr>
+
+        <!-- Header -->
+        <tr><td style="background:#111;padding:32px;text-align:center;border-left:1px solid rgba(255,255,255,0.06);border-right:1px solid rgba(255,255,255,0.06);">
+          <div style="display:inline-block;background:linear-gradient(135deg,#FF0000,#FFA500);padding:10px 16px;border-radius:4px;margin-bottom:20px;">
+            <span style="color:#000;font-size:20px;font-weight:900;letter-spacing:6px;">BONDS</span>
+          </div>
+          <p style="color:rgba(255,255,255,0.25);font-size:10px;letter-spacing:4px;text-transform:uppercase;margin:0;">AGENCE · PREMIUM STREETWEAR</p>
+        </td></tr>
+
+        <!-- Body -->
+        <tr><td style="background:#111;padding:40px 40px 48px;border-left:1px solid rgba(255,255,255,0.06);border-right:1px solid rgba(255,255,255,0.06);">
+
+          <!-- Ícone -->
+          <div style="text-align:center;margin-bottom:32px;">
+            <div style="display:inline-block;background:rgba(255,69,0,0.1);border:1px solid rgba(255,69,0,0.3);border-radius:50%;width:64px;height:64px;line-height:64px;text-align:center;font-size:28px;">🔐</div>
+          </div>
+
+          <h1 style="color:#fff;font-size:24px;font-weight:900;letter-spacing:3px;text-transform:uppercase;text-align:center;margin:0 0 8px;">
+            Confirme sua conta
+          </h1>
+          <p style="color:rgba(255,255,255,0.35);font-size:11px;letter-spacing:3px;text-transform:uppercase;text-align:center;margin:0 0 36px;">
+            Código de verificação
+          </p>
+
+          <!-- OTP Code Box -->
+          <div style="background:rgba(255,69,0,0.06);border:1px solid rgba(255,69,0,0.25);border-radius:8px;padding:32px;text-align:center;margin-bottom:32px;">
+            <p style="color:rgba(255,255,255,0.4);font-size:11px;letter-spacing:3px;text-transform:uppercase;margin:0 0 16px;">Seu código</p>
+            <div style="display:inline-block;background:linear-gradient(135deg,#FF0000,#FF4500,#FFA500);padding:2px;border-radius:6px;">
+              <div style="background:#111;border-radius:5px;padding:16px 40px;">
+                <span style="font-size:36px;font-weight:900;letter-spacing:12px;color:#FF4500;font-family:monospace;">{{ .Token }}</span>
+              </div>
+            </div>
+            <p style="color:rgba(255,255,255,0.2);font-size:11px;margin:16px 0 0;">Expira em <strong style="color:rgba(255,255,255,0.4);">10 minutos</strong></p>
+          </div>
+
+          <p style="color:rgba(255,255,255,0.5);font-size:14px;line-height:1.7;text-align:center;margin:0 0 8px;">
+            Insira este código na página de verificação<br>para ativar sua conta na Bonds Agence.
+          </p>
+          <p style="color:rgba(255,255,255,0.2);font-size:12px;text-align:center;margin:0;">
+            Se você não solicitou isso, pode ignorar este e-mail.
+          </p>
+
+        </td></tr>
+
+        <!-- Footer -->
+        <tr><td style="background:#0d0d0d;border:1px solid rgba(255,255,255,0.04);border-top:none;border-radius:0 0 8px 8px;padding:24px;text-align:center;">
+          <p style="color:rgba(255,255,255,0.15);font-size:11px;letter-spacing:2px;text-transform:uppercase;margin:0;">
+            BONDS AGENCE · bonds-agence.vercel.app
+          </p>
+        </td></tr>
+
+        <!-- Borda gradiente base -->
+        <tr><td style="background:linear-gradient(90deg,#FF0000,#FF4500,#FFA500);height:3px;border-radius:0 0 8px 8px;"></td></tr>
+
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>
+
+
+<!-- ============================================================ -->
+<!-- TEMPLATE 2: RESET PASSWORD                                   -->
+<!-- Supabase > Authentication > Email Templates > Reset password -->
+<!-- ============================================================ -->
+<!--
+Troque o corpo completo pelo HTML abaixo (mesmo estrutura, só muda o conteúdo)
+-->
+
+<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"></head>
+<body style="margin:0;padding:0;background:#0a0a0a;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#0a0a0a;min-height:100vh;">
+    <tr><td align="center" style="padding:48px 16px;">
+      <table width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%;">
+
+        <tr><td style="background:linear-gradient(90deg,#FF0000,#FF4500,#FFA500);height:3px;border-radius:8px 8px 0 0;"></td></tr>
+
+        <tr><td style="background:#111;padding:32px;text-align:center;border-left:1px solid rgba(255,255,255,0.06);border-right:1px solid rgba(255,255,255,0.06);">
+          <div style="display:inline-block;background:linear-gradient(135deg,#FF0000,#FFA500);padding:10px 16px;border-radius:4px;margin-bottom:20px;">
+            <span style="color:#000;font-size:20px;font-weight:900;letter-spacing:6px;">BONDS</span>
+          </div>
+          <p style="color:rgba(255,255,255,0.25);font-size:10px;letter-spacing:4px;text-transform:uppercase;margin:0;">AGENCE · PREMIUM STREETWEAR</p>
+        </td></tr>
+
+        <tr><td style="background:#111;padding:40px 40px 48px;border-left:1px solid rgba(255,255,255,0.06);border-right:1px solid rgba(255,255,255,0.06);">
+          <div style="text-align:center;margin-bottom:32px;">
+            <div style="display:inline-block;background:rgba(255,69,0,0.1);border:1px solid rgba(255,69,0,0.3);border-radius:50%;width:64px;height:64px;line-height:64px;text-align:center;font-size:28px;">🔑</div>
+          </div>
+
+          <h1 style="color:#fff;font-size:24px;font-weight:900;letter-spacing:3px;text-transform:uppercase;text-align:center;margin:0 0 8px;">
+            Redefinir Senha
+          </h1>
+          <p style="color:rgba(255,255,255,0.35);font-size:11px;letter-spacing:3px;text-transform:uppercase;text-align:center;margin:0 0 36px;">
+            Solicitação de nova senha
+          </p>
+
+          <p style="color:rgba(255,255,255,0.6);font-size:15px;line-height:1.7;text-align:center;margin:0 0 32px;">
+            Recebemos uma solicitação para redefinir<br>a senha da sua conta Bonds Agence.
+          </p>
+
+          <!-- CTA Button -->
+          <div style="text-align:center;margin-bottom:32px;">
+            <a href="{{ .ConfirmationURL }}"
+               style="display:inline-block;background:linear-gradient(135deg,#FF0000,#FF4500,#FFA500);color:#000;font-weight:900;font-size:13px;letter-spacing:4px;text-transform:uppercase;text-decoration:none;padding:16px 36px;border-radius:4px;">
+              REDEFINIR SENHA →
+            </a>
+          </div>
+
+          <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:6px;padding:16px;text-align:center;">
+            <p style="color:rgba(255,255,255,0.2);font-size:11px;margin:0 0 6px;">Ou copie o link abaixo:</p>
+            <p style="color:rgba(255,69,0,0.6);font-size:11px;word-break:break-all;margin:0;font-family:monospace;">{{ .ConfirmationURL }}</p>
+          </div>
+
+          <p style="color:rgba(255,255,255,0.2);font-size:12px;text-align:center;margin:24px 0 0;">
+            Este link expira em 1 hora. Se você não solicitou, ignore este e-mail.
+          </p>
+        </td></tr>
+
+        <tr><td style="background:#0d0d0d;border:1px solid rgba(255,255,255,0.04);border-top:none;border-radius:0 0 8px 8px;padding:24px;text-align:center;">
+          <p style="color:rgba(255,255,255,0.15);font-size:11px;letter-spacing:2px;text-transform:uppercase;margin:0;">BONDS AGENCE · bonds-agence.vercel.app</p>
+        </td></tr>
+        <tr><td style="background:linear-gradient(90deg,#FF0000,#FF4500,#FFA500);height:3px;border-radius:0 0 8px 8px;"></td></tr>
+
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>

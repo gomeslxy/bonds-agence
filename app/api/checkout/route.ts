@@ -1,20 +1,24 @@
 import { NextResponse } from 'next/server';
-import Stripe from 'stripe';
 import { supabase } from '@/lib/supabase';
 import { ratelimit } from '@/lib/ratelimit';
 import { validateCPF } from '@/lib/utils';
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
-  apiVersion: '2022-11-15' as any,
-});
+import { getPaymentProvider } from '@/lib/payments/service';
+import { createClient } from '@/lib/supabase/server';
+import { sendOrderConfirmationEmail } from '@/lib/email/gmail';
 
 export async function POST(req: Request) {
   try {
+    const supabaseServer = createClient();
+    const { data: { user } } = await supabaseServer.auth.getUser();
+
+    if (!user) {
+      return NextResponse.json({ error: 'Você deve estar logado para realizar um pedido.' }, { status: 401 });
+    }
+
     const origin = req.headers.get('origin');
-    const referer = req.headers.get('referer');
     const host = req.headers.get('host');
 
-    // CSRF Protection: Ensure request is from our own domain
+    // CSRF Protection
     if (origin && !origin.includes(host || '')) {
       return NextResponse.json({ error: 'Acesso não autorizado.' }, { status: 403 });
     }
@@ -32,33 +36,29 @@ export async function POST(req: Request) {
       discountPercent = 100;
       appliedCoupon = testCoupon.toUpperCase();
     } else if (coupon) {
-      // Validate real coupon from DB
-      const { data: couponData } = await supabase
+      const { data: couponData } = await supabaseServer
         .from('coupons')
         .select('*')
         .eq('code', coupon.toUpperCase())
         .single();
       
       if (couponData) {
-        // Check expiration
         const isExpired = couponData.expiration_date && new Date(couponData.expiration_date) < new Date();
         if (!isExpired) {
           discountPercent = couponData.discount_percent;
           appliedCoupon = couponData.code;
-          
-          // Increment usage count
-          await supabase.from('coupons').update({ usage_count: (couponData.usage_count || 0) + 1 }).eq('id', couponData.id);
+          await supabaseServer.from('coupons').update({ usage_count: (couponData.usage_count || 0) + 1 }).eq('id', couponData.id);
         }
       }
     }
 
-    // Recalculate total to be safe
+    // Recalculate total
     const subtotal = items.reduce((acc: number, item: any) => acc + (item.price * item.quantity), 0);
-    const shippingPrice = total_price - subtotal; // This assumes total_price already included shipping but no discount
+    const shippingPrice = total_price - subtotal;
     const discountAmount = subtotal * (discountPercent / 100);
     const finalTotal = subtotal + shippingPrice - discountAmount;
 
-    // 1. Rate Limit Check (Skip for test coupon or manual PIX)
+    // 1. Rate Limit
     if (!isTestCoupon && body.payMethod !== 'pix') {
       const ip = req.headers.get('x-forwarded-for') || '127.0.0.1';
       const { success } = await ratelimit.limit(ip);
@@ -67,28 +67,22 @@ export async function POST(req: Request) {
       }
     }
 
-    // 2. Data Sanitization
-    const sanitize = (str: string) => str.replace(/<[^>]*>?/gm, '').trim();
-    customer_name = sanitize(customer_name || '');
-    customer_email = sanitize(customer_email || '').toLowerCase();
-
-    // 2. Data Validation
-    if (!isTestCoupon) {
-      if (!validateCPF(customer_cpf)) {
-        return NextResponse.json({ error: 'CPF Inválido.' }, { status: 400 });
-      }
+    // 2. Validation
+    if (!isTestCoupon && !validateCPF(customer_cpf)) {
+      return NextResponse.json({ error: 'CPF Inválido.' }, { status: 400 });
     }
 
     if (!items || items.length === 0) {
       return NextResponse.json({ error: 'Carrinho vazio.' }, { status: 400 });
     }
 
-    // 3. Create Order in Supabase
+    // 3. Create Order
     const initialStatus = isTestCoupon ? 'Pago' : 'Pendente';
 
-    const { data: order, error: orderError } = await supabase
+    const { data: order, error: orderError } = await supabaseServer
       .from('orders')
       .insert([{
+        user_id: user.id,
         customer_name,
         customer_email,
         customer_cpf,
@@ -104,36 +98,20 @@ export async function POST(req: Request) {
 
     if (orderError) throw orderError;
 
-    // 4. Handle Test Coupon or Manual PIX Bypass
-    if (isTestCoupon || body.payMethod === 'pix') {
-      return NextResponse.json({ success: true, orderId: order.id });
-    }
+    // 4. Enviar E-mail de Confirmação (Gmail)
+    sendOrderConfirmationEmail(customer_email, order).catch(console.error); // fire-and-forget, não bloqueia checkout
 
-    // 5. Create Stripe Session (Only for other methods if ever re-enabled)
-    const session = await stripe.checkout.sessions.create({
-      payment_method_types: ['card', 'pix'],
-      customer_email: customer_email,
-      line_items: items.map((item: any) => ({
-        price_data: {
-          currency: 'brl',
-          product_data: {
-            name: item.name,
-            images: [item.image],
-            description: `Tamanho: ${item.size} | Cor: ${item.color || 'Padrão'}`,
-          },
-          unit_amount: Math.round(item.price * 100),
-        },
-        quantity: item.quantity,
-      })),
-      mode: 'payment',
-      success_url: `${req.headers.get('origin')}/success?id=${order.id}`,
-      cancel_url: `${req.headers.get('origin')}/cart`,
-      metadata: {
-        orderId: order.id,
-      },
+    // 5. Handle Payment Provider
+    // For now, even if they send 'card', we might want to force 'pix' if Stripe is not ready.
+    // But we'll respect the payMethod and use the architecture.
+    const provider = getPaymentProvider(isTestCoupon ? 'pix' : payMethod);
+    const session = await provider.createSession({
+      ...order,
+      customer_email,
+      items
     });
 
-    return NextResponse.json({ url: session.url });
+    return NextResponse.json(session);
   } catch (error: any) {
     console.error('Checkout Error:', error);
     return NextResponse.json({ error: error.message }, { status: 500 });

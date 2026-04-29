@@ -35,32 +35,32 @@ export const siteConfig = {
   installments: 12,
 
   ticker: [
-    '🔥 FRETE GRÁTIS ACIMA DE R$299',
-    '⚡ NOVOS DROPS TODA SEMANA',
-    '🔥 PARCELAMENTO EM ATÉ 12X SEM JUROS',
-    '⚡ TROCA GRÁTIS EM 30 DIAS',
-    '🔥 CORTA-VENTOS COM REFLETIVO 360°',
-    '⚡ KITS EXCLUSIVOS BONDS AGENCE',
+    'FRETE GRÁTIS EM COMPRAS ACIMA DE R$299',
+    'NEW DROPS: COLEÇÃO URBAN LUXURY DISPONÍVEL',
+    'PARCELAMENTO EM ATÉ 12X SEM JUROS',
+    'TROCA SEM CUSTO EM ATÉ 30 DIAS',
+    'CORTA-VENTOS COM TECNOLOGIA REFLETIVA 360°',
+    'KITS EXCLUSIVOS BONDS AGENCE',
   ],
 
   features: [
-    { icon: '🔥', label: 'Design Exclusivo',  sub: 'Peças únicas, sem repetição' },
-    { icon: '⚡', label: 'Entrega 48H',        sub: 'Para todo o Brasil' },
-    { icon: '🛡️', label: 'Qualidade Premium', sub: 'Tecidos selecionados' },
-    { icon: '♻️', label: 'Troca Grátis',      sub: 'Sem burocracia, 30 dias' },
+    { icon: '✦', label: 'Design Autoral',  sub: 'Peças com tiragem limitada' },
+    { icon: '⚡', label: 'Envio Express',    sub: 'Despacho em até 48h' },
+    { icon: '◈', label: 'Curadoria Premium', sub: 'Materiais de alta performance' },
+    { icon: '↺', label: 'Troca Facilitada',  sub: 'Logística reversa inclusa' },
   ],
 
   navLinks: [
-    { label: 'Drops',  href: '/produtos' },
-    { label: 'Kits',   href: '/produtos' },
-    { label: 'Collab', href: '#' },
-    { label: 'About',  href: '#' },
+    { label: 'Coleções', href: '/produtos' },
+    { label: 'Kits',     href: '/produtos' },
+    { label: 'Drops',    href: '/produtos' },
+    { label: 'Sobre',    href: '/sobre' },
   ],
 
   seo: {
-    title:       'BONDS AGENCE – Sportlife & Streetwear Premium',
-    description: 'Vista-se como um mito. Conjuntos, corta-ventos, kits refletivos e acessórios de luxo urbano.',
-    keywords:    ['streetwear', 'sportlife', 'corta-vento', 'conjuntos', 'bonds', 'agence'],
+    title:       'BONDS AGENCE | Luxury Streetwear & Sportlife',
+    description: 'Curadoria exclusiva de streetwear premium. Conjuntos, corta-ventos e acessórios com design autoral.',
+    keywords:    ['luxury streetwear', 'sportlife premium', 'moda urbana', 'bonds agence'],
   },
 
   admin: {

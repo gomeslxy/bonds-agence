@@ -3,7 +3,7 @@ export default function Loading() {
     <div className="flex h-[80vh] w-full items-center justify-center">
       <div className="relative flex h-16 w-16 items-center justify-center">
         <div className="absolute inset-0 rounded-full border-4 border-black/10 dark:border-white/10" />
-        <div className="absolute inset-0 animate-spin rounded-full border-4 border-fire-orange border-t-transparent" />
+        <div className="absolute inset-0 animate-spin rounded-full border-4 border-white border-t-transparent" />
       </div>
     </div>
   );
