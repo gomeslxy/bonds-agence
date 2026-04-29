@@ -64,6 +64,6 @@ export const siteConfig = {
   },
 
   admin: {
-    password: 'bonds2025', // ← troque antes do deploy
+    password: process.env.ADMIN_PASSWORD || 'bonds2025',
   },
 };

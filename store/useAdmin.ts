@@ -3,6 +3,7 @@
 import { create } from 'zustand';
 import { supabase } from '@/lib/supabase';
 import { type Order, type OrderStatus } from '@/lib/storage';
+import { fireToast } from '@/components/ToastVFX';
 import { type Product } from '@/data/products';
 import { siteConfig } from '@/config/siteConfig';
 
@@ -17,6 +18,12 @@ interface AdminStore {
   orders:        Order[];
   loadOrders:    () => Promise<void>;
   changeStatus:  (id: string, status: OrderStatus) => Promise<void>;
+
+  // ── Coupons ───────────────────────────────────────────────
+  coupons:       any[];
+  loadCoupons:   () => Promise<void>;
+  saveCoupon:    (c: any) => Promise<void>;
+  removeCoupon:  (id: string) => Promise<void>;
 
   // ── UI ────────────────────────────────────────────────────
   activeTab:    'products' | 'orders';
@@ -37,6 +44,7 @@ interface AdminStore {
 export const useAdmin = create<AdminStore>((set, get) => ({
   products:       [],
   orders:         [],
+  coupons:        [],
   activeTab:      'products',
   editingProduct: null,
   isAuthenticated: typeof window !== 'undefined' ? localStorage.getItem('bonds_admin_auth') === 'true' : false,
@@ -166,8 +174,66 @@ export const useAdmin = create<AdminStore>((set, get) => ({
     }
   },
 
+  // ── Coupons ───────────────────────────────────────────────
+  loadCoupons: async () => {
+    const { data, error } = await supabase.from('coupons').select('*').order('created_at', { ascending: false });
+    if (data && !error) set({ coupons: data });
+  },
+
+  saveCoupon: async (c: any) => {
+    let error;
+    if (c.id) {
+      const { error: err } = await supabase.from('coupons').update(c).eq('id', c.id);
+      error = err;
+    } else {
+      const { error: err } = await supabase.from('coupons').insert([c]);
+      error = err;
+    }
+    if (!error) {
+      fireToast('Sucesso', 'Cupom salvo com sucesso.');
+      get().loadCoupons();
+    } else {
+      console.error('Erro ao salvar cupom:', error);
+      fireToast('Erro', 'Não foi possível salvar o cupom. Verifique se a tabela existe.');
+    }
+  },
+
+  removeCoupon: async (id: string) => {
+    const { error } = await supabase.from('coupons').delete().eq('id', id);
+    if (!error) {
+      fireToast('Sucesso', 'Cupom removido.');
+      get().loadCoupons();
+    } else {
+      fireToast('Erro', 'Não foi possível remover o cupom.');
+    }
+  },
+
   setTab:     (activeTab) => set({ activeTab }),
   setEditing: (editingProduct) => set({ editingProduct }),
+
+  checkAuth: () => {
+    if (typeof window === 'undefined') return;
+    const isAuth = localStorage.getItem('bonds_admin_auth') === 'true';
+    const authTime = localStorage.getItem('bonds_admin_auth_time');
+    
+    if (isAuth && authTime) {
+      const now = Date.now();
+      const fiveMinutes = 5 * 60 * 1000;
+      if (now - parseInt(authTime) > fiveMinutes) {
+        get().logout();
+      } else {
+        set({ isAuthenticated: true });
+      }
+    } else {
+      set({ isAuthenticated: false });
+    }
+  },
+
+  logout: () => {
+    localStorage.removeItem('bonds_admin_auth');
+    localStorage.removeItem('bonds_admin_auth_time');
+    set({ isAuthenticated: false });
+  },
 
   login: async (pw) => {
     try {
@@ -182,8 +248,10 @@ export const useAdmin = create<AdminStore>((set, get) => ({
       if (res.status === 429) return 'blocked';
 
       if (data.success) {
-        set({ isAuthenticated: true });
         localStorage.setItem('bonds_admin_auth', 'true');
+        localStorage.setItem('bonds_admin_auth_time', Date.now().toString());
+        set({ isAuthenticated: true });
+        get().refreshData();
         return true;
       }
       
@@ -192,14 +260,10 @@ export const useAdmin = create<AdminStore>((set, get) => ({
       return false;
     }
   },
-  logout: () => {
-    set({ isAuthenticated: false });
-    localStorage.removeItem('bonds_admin_auth');
-  },
 
   refreshData: async () => {
     set({ isLoading: true });
-    await Promise.all([get().loadProducts(), get().loadOrders()]);
+    await Promise.all([get().loadProducts(), get().loadOrders(), get().loadCoupons()]);
     set({ isLoading: false });
   },
 
@@ -223,9 +287,17 @@ export const useAdmin = create<AdminStore>((set, get) => ({
       })
       .subscribe();
 
+    const couponChannel = supabase
+      .channel('public:coupons')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'coupons' }, () => {
+        get().loadCoupons();
+      })
+      .subscribe();
+
     return () => {
       supabase.removeChannel(productChannel);
       supabase.removeChannel(orderChannel);
+      supabase.removeChannel(couponChannel);
     };
   },
 }));

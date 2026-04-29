@@ -33,14 +33,27 @@ CREATE TABLE IF NOT EXISTS public.orders (
     state TEXT NOT NULL,
     items JSONB NOT NULL, -- Lista de itens do carrinho
     total_price DECIMAL(10,2) NOT NULL,
+    discount_amount DECIMAL(10,2) DEFAULT 0,
+    coupon_code TEXT,
     status TEXT DEFAULT 'pending' NOT NULL, -- pending, paid, shipped, cancelled
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
--- Habilitar Realtime para Orders
-ALTER PUBLICATION supabase_realtime ADD TABLE orders;
+-- 3. TABELA DE CUPONS (COUPONS)
+CREATE TABLE IF NOT EXISTS public.coupons (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    code TEXT UNIQUE NOT NULL,
+    discount_percent INT NOT NULL,
+    expiration_date TIMESTAMP WITH TIME ZONE,
+    usage_count INT DEFAULT 0,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
 
--- 3. POLÍTICAS DE SEGURANÇA (RLS) - OPCIONAL PARA DESENVOLVIMENTO
+-- Habilitar Realtime
+ALTER PUBLICATION supabase_realtime ADD TABLE orders;
+ALTER PUBLICATION supabase_realtime ADD TABLE coupons;
+
+-- 4. POLÍTICAS DE SEGURANÇA (RLS) - OPCIONAL PARA DESENVOLVIMENTO
 -- Para facilitar o setup inicial, vamos permitir acesso total (desative em produção)
 ALTER TABLE public.products ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Allow public read access" ON public.products FOR SELECT USING (true);

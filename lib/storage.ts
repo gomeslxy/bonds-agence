@@ -55,6 +55,8 @@ export interface Order {
   items:      OrderItem[];
   subtotal:   number;
   shipping:   number;
+  discountAmount?: number;
+  couponCode?:     string;
   total:      number;
   payMethod:  'card' | 'pix' | 'boleto';
 }

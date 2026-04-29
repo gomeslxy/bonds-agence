@@ -3,7 +3,8 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '@/lib/supabase';
-import { formatCurrency } from '@/lib/utils';
+import { formatCurrency, validateCPF } from '@/lib/utils';
+import { fireToast } from '@/components/ToastVFX';
 import Link from 'next/link';
 import { Search, Package, Calendar, ChevronRight, ArrowLeft } from 'lucide-react';
 import Navbar from '@/components/Navbar';
@@ -26,6 +27,12 @@ export default function OrdersPage() {
 
   const findOrders = async () => {
     if (!query || query.length < 3) return;
+
+    if (searchType === 'cpf' && !validateCPF(query)) {
+      fireToast('CPF Inválido', 'O CPF informado não é válido.');
+      return;
+    }
+
     setLoading(true);
     setSearched(true);
     
@@ -138,7 +145,10 @@ export default function OrdersPage() {
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: idx * 0.05 }}
                 >
-                  <Link href={`/order/${order.id}`}>
+                  <Link 
+                    href={`/order/${order.id}`}
+                    onClick={() => sessionStorage.setItem(`order_verified_${order.id}`, 'true')}
+                  >
                     <div className="group bg-black/[0.02] dark:bg-white/[0.02] border border-black/5 dark:border-white/5 p-6 rounded-sm hover:border-fire-orange/40 transition-all flex items-center justify-between">
                       <div className="flex items-center gap-6">
                         <div className="w-12 h-12 bg-black/5 dark:bg-white/5 rounded-sm flex items-center justify-center text-fire-orange group-hover:bg-fire-gradient group-hover:text-black transition-all">
@@ -165,8 +175,10 @@ export default function OrdersPage() {
                 </motion.div>
               ))
             ) : searched ? (
-              <motion.div key="empty" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center py-20 border border-dashed border-white/10">
-                <p className="text-white/20 font-mono text-sm tracking-widest uppercase">Nenhum pedido encontrado para este e-mail.</p>
+              <motion.div key="empty" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center py-20 border border-dashed border-black/10 dark:border-white/10 rounded-sm">
+                <p className="text-black/40 dark:text-white/20 font-mono text-sm tracking-widest uppercase">
+                  Nenhum pedido encontrado para este {searchType === 'email' ? 'e-mail' : searchType === 'cpf' ? 'CPF' : 'nome'}.
+                </p>
               </motion.div>
             ) : null}
           </AnimatePresence>

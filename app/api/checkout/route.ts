@@ -20,12 +20,46 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json();
-    let { customer_name, customer_email, customer_cpf, items, total_price, coupon, ...address } = body;
+    let { customer_name, customer_email, customer_cpf, items, total_price, coupon, payMethod, ...address } = body;
 
-    const isTestCoupon = coupon === 'bonds2026';
+    const testCoupon = (process.env.TEST_COUPON_CODE || 'agence26s').toLowerCase();
+    const isTestCoupon = coupon?.toLowerCase() === testCoupon;
 
-    // 1. Rate Limit Check (Skip for test coupon)
-    if (!isTestCoupon) {
+    let discountPercent = 0;
+    let appliedCoupon = null;
+
+    if (isTestCoupon) {
+      discountPercent = 100;
+      appliedCoupon = testCoupon.toUpperCase();
+    } else if (coupon) {
+      // Validate real coupon from DB
+      const { data: couponData } = await supabase
+        .from('coupons')
+        .select('*')
+        .eq('code', coupon.toUpperCase())
+        .single();
+      
+      if (couponData) {
+        // Check expiration
+        const isExpired = couponData.expiration_date && new Date(couponData.expiration_date) < new Date();
+        if (!isExpired) {
+          discountPercent = couponData.discount_percent;
+          appliedCoupon = couponData.code;
+          
+          // Increment usage count
+          await supabase.from('coupons').update({ usage_count: (couponData.usage_count || 0) + 1 }).eq('id', couponData.id);
+        }
+      }
+    }
+
+    // Recalculate total to be safe
+    const subtotal = items.reduce((acc: number, item: any) => acc + (item.price * item.quantity), 0);
+    const shippingPrice = total_price - subtotal; // This assumes total_price already included shipping but no discount
+    const discountAmount = subtotal * (discountPercent / 100);
+    const finalTotal = subtotal + shippingPrice - discountAmount;
+
+    // 1. Rate Limit Check (Skip for test coupon or manual PIX)
+    if (!isTestCoupon && body.payMethod !== 'pix') {
       const ip = req.headers.get('x-forwarded-for') || '127.0.0.1';
       const { success } = await ratelimit.limit(ip);
       if (!success) {
@@ -33,12 +67,12 @@ export async function POST(req: Request) {
       }
     }
 
-    // 2. Data Sanitization (Remove any HTML tags to prevent XSS in Admin)
+    // 2. Data Sanitization
     const sanitize = (str: string) => str.replace(/<[^>]*>?/gm, '').trim();
     customer_name = sanitize(customer_name || '');
     customer_email = sanitize(customer_email || '').toLowerCase();
 
-    // 2. Data Validation (Bypass for test coupon)
+    // 2. Data Validation
     if (!isTestCoupon) {
       if (!validateCPF(customer_cpf)) {
         return NextResponse.json({ error: 'CPF Inválido.' }, { status: 400 });
@@ -59,7 +93,9 @@ export async function POST(req: Request) {
         customer_email,
         customer_cpf,
         items,
-        total_price,
+        total_price: finalTotal,
+        discount_amount: discountAmount,
+        coupon_code: appliedCoupon,
         status: initialStatus,
         ...address
       }])
@@ -68,12 +104,12 @@ export async function POST(req: Request) {
 
     if (orderError) throw orderError;
 
-    // 4. Handle Test Coupon Bypass
-    if (isTestCoupon) {
+    // 4. Handle Test Coupon or Manual PIX Bypass
+    if (isTestCoupon || body.payMethod === 'pix') {
       return NextResponse.json({ success: true, orderId: order.id });
     }
 
-    // 5. Create Stripe Session
+    // 5. Create Stripe Session (Only for other methods if ever re-enabled)
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card', 'pix'],
       customer_email: customer_email,

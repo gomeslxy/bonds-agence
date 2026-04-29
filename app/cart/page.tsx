@@ -7,7 +7,7 @@ import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ArrowLeft, Trash2, Minus, Plus,
-  Lock, ChevronRight, Truck,
+  Lock, ChevronRight, Truck, Zap
 } from 'lucide-react';
 import { useCart } from '@/store/useCart';
 import { fireToast } from '@/components/ToastVFX';
@@ -18,9 +18,9 @@ import { supabase } from '@/lib/supabase';
 
 /* ─── Neon Input ────────────────────────────────────────── */
 function FireInput({
-  label, placeholder, type = 'text', half = false, value, onChange, error, maxLength
+  label, placeholder, type = 'text', half = false, value, onChange, error, maxLength, loading
 }: {
-  label: string; placeholder: string; type?: string; half?: boolean; value?: string; onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void; error?: boolean; maxLength?: number;
+  label: string; placeholder: string; type?: string; half?: boolean; value?: string; onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void; error?: boolean; maxLength?: number; loading?: boolean;
 }) {
   const [focused, setFocused] = useState(false);
   return (
@@ -42,8 +42,13 @@ function FireInput({
           maxLength={maxLength}
           className={`w-full px-4 py-3 bg-transparent text-black dark:text-white placeholder-black/30 dark:placeholder-white/20 text-sm outline-none transition-all duration-300 font-body font-medium rounded-sm ${
             error ? 'border border-red-500 drop-shadow-[0_0_10px_rgba(239,68,68,0.2)]' : focused ? 'border border-fire-orange bg-fire-orange/5 drop-shadow-[0_0_16px_rgba(255,69,0,0.2)]' : 'border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/[0.02]'
-          }`}
+          } ${loading ? 'opacity-50 animate-pulse cursor-wait' : ''}`}
         />
+        {loading && (
+          <div className="absolute right-3 top-1/2 -translate-y-1/2">
+            <div className="w-3 h-3 border-2 border-fire-orange/30 border-t-fire-orange rounded-full animate-spin" />
+          </div>
+        )}
         {focused && !error && (
           <motion.div
             initial={{ scaleX: 0 }}
@@ -80,6 +85,7 @@ export default function CartPage() {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
+    confirmEmail: '',
     cpf: '',
     cep: '',
     address: '',
@@ -90,12 +96,37 @@ export default function CartPage() {
     state: '',
   });
 
+  const [mounted, setMounted] = useState(false);
   const [shipping, setShipping] = useState<null | { label: string; price: number; days: number }>(null);
   const [loadingCep, setLoadingCep] = useState(false);
   const [loadingOrder, setLoadingOrder] = useState(false);
-  const [payMethod, setPayMethod] = useState<'card' | 'pix' | 'boleto'>('card');
+  const [payMethod, setPayMethod] = useState<'pix'>('pix');
+  const [currentStep, setCurrentStep] = useState(1);
   const [coupon, setCoupon] = useState('');
   const [isCpfValid, setIsCpfValid] = useState(true);
+  const [couponInfo, setCouponInfo] = useState<{ code: string; discount: number } | null>(null);
+  const [couponError, setCouponError] = useState(false);
+  const [pixTimer, setPixTimer] = useState(10);
+
+  useEffect(() => {
+    let interval: any;
+    if (currentStep === 2) {
+      // Start countdown only in Step 2
+      if (pixTimer > 0) {
+        interval = setInterval(() => {
+          setPixTimer(prev => prev - 1);
+        }, 1000);
+      }
+    } else {
+      // Reset timer if they go back to Step 1
+      setPixTimer(10);
+    }
+    return () => clearInterval(interval);
+  }, [currentStep, pixTimer]);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const subtotal = totalPrice();
   const shippingCost = shipping?.price ?? (subtotal >= 299 ? 0 : null);
@@ -131,7 +162,7 @@ export default function CartPage() {
   const fetchAddress = async (cep: string) => {
     try {
       setLoadingCep(true);
-      const res = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+      const res = await fetch(`/api/cep/${cep}`);
       const data = await res.json();
       
       if (!data.erro) {
@@ -143,10 +174,14 @@ export default function CartPage() {
           state: data.uf || prev.state,
         }));
         
+        fireToast('CEP Encontrado!', `${data.localidade}, ${data.uf}`);
+        
         // Also trigger shipping calculation if items exist
         if (items.length > 0) {
           calcShipping(cep);
         }
+      } else {
+        fireToast('CEP não encontrado', 'Verifique o número digitado.');
       }
     } catch (err) {
       console.error('Erro ao buscar CEP:', err);
@@ -176,27 +211,63 @@ export default function CartPage() {
     }
   };
 
+  const validateCoupon = async () => {
+    const code = coupon.trim();
+    if (!code) return;
+    
+    setLoadingCep(true); // Reusing loading state for feedback
+    try {
+      const res = await fetch('/api/coupons/validate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code }),
+      });
+      const data = await res.json();
+      
+      if (data.valid) {
+        setCouponInfo({ code: data.code, discount: data.discount });
+        setCouponError(false);
+        fireToast('Cupom Aplicado!', `${data.discount}% de desconto ativado`);
+      } else {
+        setCouponInfo(null);
+        setCouponError(true);
+        fireToast('Cupom Inválido', data.error || 'Este código não existe ou expirou.');
+      }
+    } catch (err) {
+      fireToast('Erro', 'Não foi possível validar o cupom.');
+    } finally {
+      setLoadingCep(false);
+    }
+  };
+
   const isFormValid = () => {
     const required = ['name', 'email', 'cpf', 'cep', 'address', 'number', 'neighborhood', 'city', 'state'];
     const hasEmpty = required.some(field => !formData[field as keyof typeof formData]);
     
     // Stricter Email Validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    // Regex: at least 3 chars before @, at least 2 chars for domain part, etc.
+    const emailRegex = /^[a-zA-Z0-9._%+-]{3,}@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     const isEmailValid = emailRegex.test(formData.email);
+    const isEmailMatching = formData.email === formData.confirmEmail && formData.email.length > 0;
     
     // Stricter Name Validation (at least two words)
-    const nameParts = formData.name.trim().split(/\s+/);
-    const isNameValid = nameParts.length >= 2 && formData.name.length >= 5;
+    const nameStr = typeof formData.name === 'string' ? formData.name : '';
+    const nameParts = nameStr.trim().split(/\s+/);
+    const isNameValid = nameParts.length >= 2 && nameStr.length >= 5;
     
     const isCepComplete = formData.cep.replace(/\D/g, '').length === 8;
     const isCpfComplete = formData.cpf.replace(/\D/g, '').length === 11;
     
-    return !hasEmpty && isNameValid && isCpfValid && isCpfComplete && isCepComplete && isEmailValid && items.length > 0;
+    return !hasEmpty && isNameValid && isCpfValid && isCpfComplete && isCepComplete && isEmailValid && isEmailMatching && items.length > 0;
   };
 
   const handleOrder = async () => {
     if (!isFormValid()) {
-      fireToast('Campos Incompletos', 'Por favor preencha todos os dados obrigatórios e verifique o CPF.');
+      if (formData.email !== formData.confirmEmail) {
+        fireToast('E-mails não coincidem', 'Os campos de e-mail devem ser idênticos.');
+      } else {
+        fireToast('Campos Incompletos', 'Por favor preencha todos os dados obrigatórios e verifique os dados.');
+      }
       return;
     }
 
@@ -229,7 +300,7 @@ export default function CartPage() {
       const res = await fetch('/api/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...orderData, coupon }),
+        body: JSON.stringify({ ...orderData, coupon, payMethod: 'pix' }),
       });
 
       const resData = await res.json();
@@ -239,7 +310,7 @@ export default function CartPage() {
         fireToast('Redirecionando...', 'Aguarde um momento.');
         window.location.href = resData.url;
       } else if (resData.success) {
-        fireToast('Pedido Confirmado!', 'Teste bonds2026 ativado.');
+        fireToast('Pedido Realizado!', 'Seu pedido foi registrado com sucesso.');
         clearCart();
         router.push(`/success?id=${resData.orderId}`);
       }
@@ -250,6 +321,14 @@ export default function CartPage() {
       setLoadingOrder(false);
     }
   };
+
+  if (!mounted) {
+    return (
+      <div className="min-h-screen bg-white dark:bg-black flex items-center justify-center">
+        <div className="w-10 h-10 border-4 border-fire-orange/20 border-t-fire-orange rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <main className="min-h-screen bg-white dark:bg-black">
@@ -364,152 +443,168 @@ export default function CartPage() {
               </div>
             </motion.section>
 
-            {/* ── Shipping calc ── */}
-            <motion.section
-              initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.1 }}
-            >
-              <SectionTitle step={2}>Calcular Frete</SectionTitle>
-              <div className="flex gap-3">
-                <div className="flex-1 relative">
-                  <label className="block text-[10px] tracking-[0.2em] uppercase mb-1.5 text-black/50 dark:text-white/30 font-mono">
-                    CEP
-                  </label>
-                  <input
-                    value={formData.cep}
-                    onChange={(e) => handleInputChange('cep', e.target.value)}
-                    placeholder="00000-000"
-                    maxLength={9}
-                    className="w-full px-4 py-3 bg-transparent text-black dark:text-white placeholder-black/30 dark:placeholder-white/20 outline-none font-mono border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/[0.02] rounded-sm"
-                    onKeyDown={(e) => e.key === 'Enter' && calcShipping()}
-                  />
-                  {loadingCep && (
-                    <div className="absolute right-3 bottom-3">
-                      <div className="w-4 h-4 border-2 border-fire-orange/30 border-t-fire-orange rounded-full animate-spin" />
+            <AnimatePresence mode="wait">
+              {currentStep === 1 ? (
+                <motion.div
+                  key="step1"
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: 20 }}
+                  className="space-y-8"
+                >
+                  {/* ── Identificação ── */}
+                  <section>
+                    <SectionTitle step={1}>Identificação</SectionTitle>
+                    <div className="space-y-4">
+                      <div className="flex gap-4 flex-wrap">
+                        <FireInput label="Nome Completo" placeholder="Seu nome" half value={formData.name} onChange={e => handleInputChange('name', e.target.value)} />
+                        <FireInput label="CPF" placeholder="000.000.000-00" half value={formData.cpf} onChange={e => handleInputChange('cpf', e.target.value)} error={!isCpfValid} maxLength={14} />
+                      </div>
+                      <div className="flex gap-4 flex-wrap">
+                        <FireInput label="E-mail" placeholder="seu@email.com" type="email" half value={formData.email} onChange={e => handleInputChange('email', e.target.value)} />
+                        <FireInput label="Confirmar E-mail" placeholder="seu@email.com" type="email" half value={formData.confirmEmail} onChange={e => handleInputChange('confirmEmail', e.target.value)} error={formData.confirmEmail.length > 0 && formData.email !== formData.confirmEmail} />
+                      </div>
                     </div>
-                  )}
-                </div>
-                <div className="flex items-end">
-                  <motion.button
-                    whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}
-                    onClick={() => calcShipping()}
-                    disabled={loadingCep}
-                    className="px-5 py-3 font-body font-bold uppercase tracking-[0.15em] text-sm transition-all rounded-sm bg-gradient-to-br from-[#FF0000] via-[#FF4500] to-[#FFA500] text-black"
-                    style={{ opacity: loadingCep ? 0.7 : 1 }}
+                  </section>
+
+                  {/* ── Entrega ── */}
+                  <section>
+                    <SectionTitle step={2}>Dados de Entrega</SectionTitle>
+                    <div className="space-y-4">
+                      <div className="flex gap-4 flex-wrap">
+                        <FireInput label="CEP" placeholder="00000-000" half value={formData.cep} onChange={e => handleInputChange('cep', e.target.value)} maxLength={9} loading={loadingCep} />
+                        <FireInput label="Endereço" placeholder="Rua, Av..." half value={formData.address} onChange={e => handleInputChange('address', e.target.value)} loading={loadingCep} />
+                      </div>
+                      <div className="flex gap-4 flex-wrap">
+                        <FireInput label="Número" placeholder="123" half value={formData.number} onChange={e => handleInputChange('number', e.target.value)} />
+                        <FireInput label="Bairro" placeholder="Seu bairro" half value={formData.neighborhood} onChange={e => handleInputChange('neighborhood', e.target.value)} loading={loadingCep} />
+                      </div>
+                      <div className="flex gap-4 flex-wrap">
+                        <FireInput label="Cidade" placeholder="São Paulo" half value={formData.city} onChange={e => handleInputChange('city', e.target.value)} loading={loadingCep} />
+                        <FireInput label="Estado" placeholder="SP" half value={formData.state} onChange={e => handleInputChange('state', e.target.value)} loading={loadingCep} />
+                      </div>
+                    </div>
+                  </section>
+
+                  <button
+                    onClick={() => {
+                      if (!formData.name || !formData.email || !formData.cpf || !formData.cep || !formData.number || !formData.address) {
+                        fireToast('Atenção', 'Preencha todos os campos obrigatórios.');
+                        return;
+                      }
+                      if (formData.email !== formData.confirmEmail) {
+                        fireToast('Erro', 'Os e-mails não coincidem.');
+                        return;
+                      }
+                      if (!isCpfValid) {
+                        fireToast('Erro', 'CPF inválido.');
+                        return;
+                      }
+                      setCurrentStep(2);
+                      window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }}
+                    className="w-full py-5 bg-gradient-to-r from-fire-red to-fire-orange text-black font-bold uppercase tracking-[0.2em] rounded-sm hover:scale-[1.02] transition-all active:scale-[0.98]"
                   >
-                    {loadingCep ? '...' : 'Calcular'}
-                  </motion.button>
-                </div>
-              </div>
-
-              {/* Shipping result */}
-              <AnimatePresence>
-                {shipping && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -8, height: 0 }}
-                    animate={{ opacity: 1, y: 0, height: 'auto' }}
-                    exit={{ opacity: 0, y: -8, height: 0 }}
-                    className="mt-3 flex items-center gap-3 px-4 py-3 overflow-hidden bg-fire-orange/10 border border-fire-orange/20 rounded-sm"
+                    Próximo Passo: Pagamento
+                  </button>
+                </motion.div>
+              ) : (
+                <motion.div
+                  key="step2"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  className="space-y-8"
+                >
+                  <button 
+                    onClick={() => setCurrentStep(1)}
+                    className="flex items-center gap-2 text-[10px] text-black/40 dark:text-white/20 hover:text-fire-orange transition-colors font-mono uppercase tracking-widest"
                   >
-                    <Truck size={14} className="text-fire-orange flex-shrink-0" />
-                    <span className="text-sm text-black/60 dark:text-white/60 font-body">
-                      {shipping.label} — entrega em {shipping.days} dias úteis
-                    </span>
-                    <span className={`ml-auto font-bold font-mono text-[0.85rem] ${shipping.price === 0 ? 'text-green-500 dark:text-green-400' : 'text-fire-orange'}`}>
-                      {shipping.price === 0 ? 'GRÁTIS' : formatCurrency(shipping.price)}
-                    </span>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </motion.section>
+                    <ArrowLeft size={12} /> Alterar dados de entrega
+                  </button>
 
-            {/* ── Checkout form ── */}
-            <motion.section
-              initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.2 }}
-            >
-              <SectionTitle step={3}>Dados de Entrega</SectionTitle>
-              <div className="space-y-4">
-                <div className="flex gap-4 flex-wrap">
-                  <FireInput label="Nome Completo" placeholder="Seu nome" half value={formData.name} onChange={e => handleInputChange('name', e.target.value)} />
-                  <FireInput label="CPF" placeholder="000.000.000-00" half value={formData.cpf} onChange={e => handleInputChange('cpf', e.target.value)} error={!isCpfValid} maxLength={14} />
-                </div>
-                <FireInput label="E-mail" placeholder="seu@email.com" type="email" value={formData.email} onChange={e => handleInputChange('email', e.target.value)} />
-                <div className="flex gap-4 flex-wrap">
-                  <FireInput label="CEP" placeholder="00000-000" half value={formData.cep} onChange={e => handleInputChange('cep', e.target.value)} maxLength={9} />
-                  <FireInput label="Endereço" placeholder="Rua, Av..." half value={formData.address} onChange={e => handleInputChange('address', e.target.value)} />
-                </div>
-                <div className="flex gap-4 flex-wrap">
-                  <FireInput label="Número" placeholder="123" half value={formData.number} onChange={e => handleInputChange('number', e.target.value)} />
-                  <FireInput label="Bairro" placeholder="Seu bairro" half value={formData.neighborhood} onChange={e => handleInputChange('neighborhood', e.target.value)} />
-                </div>
-                <div className="flex gap-4 flex-wrap">
-                  <FireInput label="Cidade" placeholder="São Paulo" half value={formData.city} onChange={e => handleInputChange('city', e.target.value)} />
-                  <FireInput label="Estado" placeholder="SP" half value={formData.state} onChange={e => handleInputChange('state', e.target.value)} />
-                </div>
-              </div>
-            </motion.section>
+                  <section>
+                    <SectionTitle step={3}>Pagamento</SectionTitle>
+                    
+                    <div className="p-6 border border-fire-orange/20 bg-fire-orange/5 rounded-sm space-y-6">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 flex items-center justify-center bg-fire-orange/20 rounded-full text-fire-orange">
+                            <Zap size={20} />
+                          </div>
+                          <div>
+                            <h4 className="font-display tracking-widest text-lg">PIX (Provisório)</h4>
+                            <p className="text-[10px] font-mono text-fire-orange/60 uppercase">Aprovação imediata</p>
+                          </div>
+                        </div>
+                        <span className="px-2 py-1 bg-fire-orange/10 border border-fire-orange/20 text-[9px] font-mono text-fire-orange rounded-sm uppercase tracking-tighter">
+                          V4 Secure
+                        </span>
+                      </div>
 
-            {/* ── Payment method ── */}
-            <motion.section
-              initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.3 }}
-            >
-              <SectionTitle step={4}>Forma de Pagamento</SectionTitle>
-              <div className="flex gap-3 flex-wrap">
-                {(['card', 'pix', 'boleto'] as const).map((method) => {
-                  const labels = { card: '💳 Cartão', pix: '⚡ PIX', boleto: '📄 Boleto' };
-                  const subs   = { card: 'até 12x sem juros', pix: '5% de desconto', boleto: 'vence em 3 dias' };
-                  const isSelected = payMethod === method;
-                  return (
+                      <div className="space-y-4 pt-2">
+                        <div className="p-4 bg-black/5 dark:bg-white/[0.03] border border-black/10 dark:border-white/10 rounded-sm">
+                          <p className="text-[10px] text-black/40 dark:text-white/30 font-mono uppercase mb-1">Beneficiário</p>
+                          <p className="text-sm font-body font-bold text-black dark:text-white">LUCAS GOMES DO AMARAL</p>
+                        </div>
+
+                        <div className="p-4 bg-black/5 dark:bg-white/[0.03] border border-black/10 dark:border-white/10 rounded-sm">
+                          <p className="text-[10px] text-black/40 dark:text-white/30 font-mono uppercase mb-1">Valor a pagar</p>
+                          <p className="text-2xl font-display text-fire-orange">{formatCurrency(total * (1 - (couponInfo?.discount || 0) / 100))}</p>
+                        </div>
+
+                        <div className="flex flex-col items-center gap-4 p-4 bg-white/10 rounded-sm">
+                          <p className="text-[10px] text-white/40 font-mono uppercase">Escaneie o QR Code</p>
+                          <div className="bg-white p-4 rounded-sm">
+                            <img 
+                              src="/pix_qrcode.jpeg" 
+                              alt="PIX QR Code" 
+                              className="w-40 h-40 object-contain block mx-auto"
+                            />
+                          </div>
+                          <p className="text-[9px] text-white/20 font-mono uppercase tracking-widest">Ou use o código abaixo</p>
+                        </div>
+
+                        <div>
+                          <label className="block text-[10px] tracking-widest uppercase mb-2 text-black/40 dark:text-white/30 font-mono">Copia e Cola</label>
+                          <div className="relative">
+                            <input
+                              readOnly
+                              value="00020101021126360014br.gov.bcb.pix0114+55119899400805204000053039865802BR5921LUCAS GOMES DO AMARAL6010INDAIATUBA62070503***63043504"
+                              className="w-full bg-black/5 dark:bg-white/[0.03] border border-black/10 dark:border-white/10 px-4 py-3 pr-12 rounded-sm font-mono text-[10px] text-black/60 dark:text-white/40 overflow-hidden text-ellipsis"
+                            />
+                            <button
+                              onClick={() => {
+                                navigator.clipboard.writeText("00020101021126360014br.gov.bcb.pix0114+55119899400805204000053039865802BR5921LUCAS GOMES DO AMARAL6010INDAIATUBA62070503***63043504");
+                                fireToast('Copiado!', 'Chave PIX copiada para a área de transferência.');
+                              }}
+                              className="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-fire-orange hover:bg-fire-orange/10 rounded-sm transition-all active:scale-90"
+                            >
+                              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2" /></svg>
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="pt-2">
+                        <p className="text-[11px] leading-relaxed text-black/50 dark:text-white/30 font-body text-center">
+                          Ao confirmar, seu pedido será registrado e você poderá enviar o comprovante. <br/>
+                          <span className="text-fire-orange/60">Pagamento 100% seguro via PIX.</span>
+                        </p>
+                      </div>
+                    </div>
+
                     <button
-                      key={method}
-                      onClick={() => setPayMethod(method)}
-                      className={`flex-1 min-w-[130px] py-4 px-3 text-center transition-all duration-200 rounded-sm border ${
-                        isSelected ? 'border-fire-orange bg-fire-orange/20 drop-shadow-fire-sm' : 'border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/[0.02]'
-                      }`}
+                      onClick={handleOrder}
+                      disabled={loadingOrder || pixTimer > 0}
+                      className="w-full mt-6 py-5 bg-fire-orange text-black font-bold uppercase tracking-[0.2em] rounded-sm hover:scale-[1.02] transition-all active:scale-[0.98] disabled:opacity-50 disabled:grayscale-[0.5]"
                     >
-                      <p className="text-sm font-bold font-body text-black dark:text-white">
-                        {labels[method]}
-                      </p>
-                      <p className={`text-[10px] mt-1 font-mono ${isSelected ? 'text-fire-orange' : 'text-black/40 dark:text-white/20'}`}>
-                        {subs[method]}
-                      </p>
+                      {loadingOrder ? 'Processando...' : pixTimer > 0 ? `Aguardando Pagamento (${pixTimer}s)` : 'Confirmar Pedido e Finalizar'}
                     </button>
-                  );
-                })}
-              </div>
-
-              {payMethod === 'card' && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }}
-                  transition={{ duration: 0.3 }}
-                  className="mt-4 space-y-4 overflow-hidden"
-                >
-                  <FireInput label="Número do Cartão" placeholder="0000 0000 0000 0000" />
-                  <div className="flex gap-4">
-                    <FireInput label="Validade" placeholder="MM/AA" half />
-                    <FireInput label="CVV" placeholder="000" half />
-                  </div>
-                  <FireInput label="Nome no Cartão" placeholder="NOME IMPRESSO" />
+                  </section>
                 </motion.div>
               )}
-
-              {payMethod === 'pix' && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }}
-                  transition={{ duration: 0.3 }}
-                  className="mt-4 p-6 text-center overflow-hidden border border-black/5 dark:border-white/[0.05] rounded-sm bg-black/5 dark:bg-white/[0.02]"
-                >
-                  <div className="w-24 h-24 mx-auto mb-4 flex items-center justify-center border-2 border-fire-orange/30 rounded-md bg-fire-orange/10">
-                    <span className="text-3xl">⚡</span>
-                  </div>
-                  <p className="text-sm text-black/60 dark:text-white/50 font-body">
-                    O QR Code PIX será gerado após confirmar o pedido.
-                  </p>
-                  <p className="text-xs mt-1 text-green-600 dark:text-green-400/80 font-mono">
-                    5% de desconto aplicado automaticamente
-                  </p>
-                </motion.div>
-              )}
-            </motion.section>
+            </AnimatePresence>
           </div>
 
           {/* ══ RIGHT — Order Summary ══ */}
@@ -566,12 +661,27 @@ export default function CartPage() {
                 <label className="block text-[9px] tracking-[0.2em] uppercase mb-1.5 text-black/40 dark:text-white/20 font-mono">
                   CUPOM DE DESCONTO
                 </label>
-                <input
-                  value={coupon}
-                  onChange={(e) => setCoupon(e.target.value)}
-                  placeholder="CUPOM"
-                  className="w-full px-3 py-2 bg-transparent text-black dark:text-white placeholder-black/30 dark:placeholder-white/20 text-xs outline-none border border-black/10 dark:border-white/10 focus:border-fire-orange/40 transition-all font-mono rounded-sm"
-                />
+                <div className="flex gap-2">
+                  <input
+                    value={coupon}
+                    onChange={(e) => { setCoupon(e.target.value); setCouponInfo(null); setCouponError(false); }}
+                    placeholder="CUPOM"
+                    className={`flex-1 px-3 py-2 bg-transparent text-black dark:text-white placeholder-black/30 dark:placeholder-white/20 text-xs outline-none border transition-all font-mono rounded-sm ${
+                      couponInfo ? 'border-green-500/50 bg-green-500/5' : couponError ? 'border-red-500/50 bg-red-500/5' : 'border-black/10 dark:border-white/10 focus:border-fire-orange/40'
+                    }`}
+                  />
+                  <button 
+                    onClick={validateCoupon}
+                    className="px-3 py-2 bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 rounded-sm font-mono text-[9px] hover:bg-fire-orange hover:text-black transition-all uppercase tracking-widest"
+                  >
+                    Aplicar
+                  </button>
+                </div>
+                {couponInfo && (
+                  <p className="text-[9px] text-green-500 mt-1.5 font-mono uppercase tracking-wider">
+                    ✓ {couponInfo.discount}% de desconto aplicado
+                  </p>
+                )}
               </div>
 
               {/* Divider */}
@@ -582,9 +692,18 @@ export default function CartPage() {
                 <span className="text-black/60 dark:text-white/50 text-sm font-mono text-[0.7rem]">
                   TOTAL
                 </span>
-                <span className="text-3xl font-display tracking-[0.05em] text-transparent bg-clip-text bg-gradient-to-br from-[#FF0000] via-[#FF4500] to-[#FFA500] drop-shadow-[0_0_10px_rgba(255,69,0,0.3)]">
-                  {formatCurrency(shippingCost !== null ? total : subtotal)}
-                </span>
+                <div className="text-right">
+                  {couponInfo && (
+                    <p className="text-[10px] text-black/30 dark:text-white/20 line-through font-mono mb-1">
+                      {formatCurrency(shippingCost !== null ? total : subtotal)}
+                    </p>
+                  )}
+                  <span className="text-3xl font-display tracking-[0.05em] text-transparent bg-clip-text bg-gradient-to-br from-[#FF0000] via-[#FF4500] to-[#FFA500] drop-shadow-[0_0_10px_rgba(255,69,0,0.3)]">
+                    {formatCurrency(
+                      (shippingCost !== null ? total : subtotal) * (1 - (couponInfo?.discount || 0) / 100)
+                    )}
+                  </span>
+                </div>
               </div>
 
               {/* CTA */}

@@ -3,7 +3,7 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
 import { useState } from 'react';
-import { ChevronDown, Package, CreditCard, Zap, FileText, MapPin, User } from 'lucide-react';
+import { ChevronDown, Package, CreditCard, Zap, FileText, MapPin, User, Tag } from 'lucide-react';
 import { useAdmin } from '@/store/useAdmin';
 import { type Order, type OrderStatus } from '@/lib/storage';
 import { formatCurrency } from '@/lib/utils';
@@ -159,9 +159,25 @@ function OrderRow({ order }: { order: Order }) {
                       </div>
                     ))}
                   </div>
-                  <div className="flex justify-between pt-4 border-t border-black/5 dark:border-white/[0.05] text-[0.7rem] text-black/60 dark:text-white/40 font-mono">
-                    <span>Subtotal: {formatCurrency(order.total)}</span>
-                    <span>Total: <span className="text-[1rem] text-fire-orange">{formatCurrency(order.total)}</span></span>
+                  <div className="pt-4 border-t border-black/5 dark:border-white/[0.05] space-y-2">
+                    <div className="flex justify-between text-[0.7rem] text-black/60 dark:text-white/40 font-mono">
+                      <span>SUBTOTAL:</span>
+                      <span>{formatCurrency(order.items.reduce((acc, i) => acc + i.price * i.quantity, 0))}</span>
+                    </div>
+                    <div className="flex justify-between text-[0.7rem] text-black/60 dark:text-white/40 font-mono">
+                      <span>FRETE:</span>
+                      <span>{order.total >= 299 ? 'GRÁTIS' : formatCurrency(order.total - order.items.reduce((acc, i) => acc + i.price * i.quantity, 0) + (order.discountAmount || 0))}</span>
+                    </div>
+                    {order.couponCode && (
+                      <div className="flex justify-between text-[0.7rem] text-green-500 font-mono">
+                        <span className="flex items-center gap-1"><Tag size={10} /> CUPOM ({order.couponCode}):</span>
+                        <span>-{formatCurrency(order.discountAmount || 0)}</span>
+                      </div>
+                    )}
+                    <div className="flex justify-between pt-2 border-t border-black/5 dark:border-white/[0.05] font-bold">
+                      <span className="text-[0.7rem] text-black dark:text-white font-mono uppercase tracking-widest">TOTAL:</span>
+                      <span className="text-[1.1rem] text-fire-orange font-display">{formatCurrency(order.total)}</span>
+                    </div>
                   </div>
                 </div>
               </div>

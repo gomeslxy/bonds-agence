@@ -3,14 +3,17 @@
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
+import Link from 'next/link';
 import {
   Shield, LogOut, Plus, Pencil, Trash2,
-  Package, ShoppingBag, RefreshCw, Zap, Lock,
+  Package, ShoppingBag, RefreshCw, Zap, Lock, Tag, ArrowLeft
 } from 'lucide-react';
 import { useAdmin } from '@/store/useAdmin';
 import { type Product } from '@/data/products';
 import ProductForm from './components/ProductForm';
+import ProductsTable from './components/ProductsTable';
 import OrdersTable from './components/OrdersTable';
+import CouponsTable from './components/CouponsTable';
 import { ThemeToggle } from '@/components/ThemeToggle';
 
 const fmt = (n: number) => n.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
@@ -128,69 +131,14 @@ function AuthGate() {
         <p className="text-[10px] text-black/30 dark:text-white/15 font-mono">
           Acesso restrito · BONDS AGENCE
         </p>
+
+        <div className="pt-4">
+          <Link href="/" className="inline-flex items-center gap-2 px-6 py-2.5 border border-black/10 dark:border-white/10 rounded-sm text-[11px] font-mono uppercase tracking-widest hover:bg-black/5 dark:hover:bg-white/5 transition-all group">
+            <ArrowLeft size={12} className="group-hover:-translate-x-1 transition-all" /> Voltar para a loja
+          </Link>
+        </div>
       </motion.div>
     </div>
-  );
-}
-
-/* ── Product row ────────────────────────────────────────── */
-function ProductRow({ product, onEdit, onDelete }: {
-  product: Product; onEdit: () => void; onDelete: () => void;
-}) {
-  return (
-    <motion.tr layout className="border-b border-white/[0.04] hover:bg-white/[0.015] transition-colors group">
-      <td className="px-4 py-3">
-        <div className="relative w-10 h-12 overflow-hidden flex-shrink-0" style={{ borderRadius: '2px' }}>
-          <Image src={product.image} alt={product.name} fill className="object-cover object-top" />
-        </div>
-      </td>
-      <td className="px-4 py-3">
-        <p className="text-sm text-black dark:text-white font-display tracking-[0.05em] text-[1rem]">
-          {product.name}
-        </p>
-        <p className="text-[10px] text-black/50 dark:text-white/30 font-mono">{product.category}</p>
-      </td>
-      <td className="px-4 py-3 hidden sm:table-cell">
-        <span className="text-lg font-display text-transparent bg-clip-text bg-gradient-to-br from-[#FF4500] to-[#FFA500]">
-          {fmt(product.price)}
-        </span>
-      </td>
-      <td className="px-4 py-3 hidden md:table-cell">
-        <span className="text-sm text-black/60 dark:text-white/50 font-mono">
-          {product.stock} un
-        </span>
-      </td>
-      <td className="px-4 py-3 hidden lg:table-cell">
-        <div className="flex gap-1 flex-wrap">
-          {product.sizes.map((s) => (
-            <span key={s} className="text-[9px] border border-black/10 dark:border-white/10 px-1.5 py-0.5 text-black/50 dark:text-white/30 font-mono rounded-[1px]">
-              {s}
-            </span>
-          ))}
-        </div>
-      </td>
-      <td className="px-4 py-3 hidden sm:table-cell">
-        {product.tag && (
-          <span className="text-[10px] px-2 py-1 font-bold font-mono rounded-[1px]"
-                style={{ background: product.tagColor ?? '#FF0000', color: 'black' }}>
-            {product.tag}
-          </span>
-        )}
-      </td>
-      <td className="px-4 py-3">
-        <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-          <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={onEdit}
-                         className="p-1.5 border border-black/10 dark:border-white/10 text-black/40 dark:text-white/40 hover:text-black dark:hover:text-white hover:border-black/30 dark:hover:border-white/25 transition-all rounded-sm">
-            <Pencil size={12} />
-          </motion.button>
-          <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={onDelete}
-                         className="p-1.5 border border-red-900/30 text-red-500/40 hover:text-red-400 hover:border-red-500/40 transition-all"
-                         style={{ borderRadius: '2px' }}>
-            <Trash2 size={12} />
-          </motion.button>
-        </div>
-      </td>
-    </motion.tr>
   );
 }
 
@@ -252,9 +200,9 @@ function Dashboard() {
               {pendingOrders} pendente{pendingOrders > 1 ? 's' : ''}
             </motion.div>
           )}
-          <a href="/" target="_blank" className="text-[10px] text-black/50 dark:text-white/30 hover:text-black dark:hover:text-white transition-colors font-mono">
-            Ver Loja ↗
-          </a>
+          <Link href="/" className="flex items-center gap-2 px-4 py-2 bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 rounded-sm text-[10px] font-mono uppercase tracking-widest hover:bg-black/10 dark:hover:bg-white/10 transition-all group">
+            <ArrowLeft size={12} className="group-hover:-translate-x-1 transition-all" /> Voltar Loja
+          </Link>
           <ThemeToggle />
           <button onClick={logout} className="flex items-center gap-1.5 text-[10px] text-black/50 dark:text-white/30 hover:text-black dark:hover:text-white transition-colors font-mono">
             <LogOut size={12} />
@@ -270,40 +218,40 @@ function Dashboard() {
       <div className="pt-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
         {/* Tab navigation */}
         <div className="flex items-center gap-2 mb-8 mt-6">
-          {[
-            { key: 'products', label: 'Produtos', icon: <ShoppingBag size={13} />, count: products.length },
-            { key: 'orders',   label: 'Pedidos',  icon: <Package size={13} />,     count: orders.length },
-          ].map((tab) => {
-            const active = activeTab === tab.key;
-            return (
-              <button key={tab.key} onClick={() => setTab(tab.key as 'products' | 'orders')}
-                      className={`flex items-center gap-2 px-5 py-2.5 text-sm font-bold uppercase tracking-[0.15em] transition-all duration-200 font-body rounded-sm ${
-                        active ? 'text-black bg-gradient-to-br from-[#FF0000] via-[#FF4500] to-[#FFA500] border-transparent drop-shadow-[0_0_20px_rgba(255,69,0,0.3)]' : 'text-black/50 dark:text-white/40 border border-black/10 dark:border-white/10 bg-black/[0.02] dark:bg-white/[0.02]'
-                      }`}
-                      >
-                {tab.icon}
-                {tab.label}
-                <span className="text-[10px] px-1.5 py-0.5 rounded-full font-mono bg-black/5 dark:bg-white/5">
-                  {tab.count}
-                </span>
+          <div className="flex items-center gap-1.5 p-1 bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 rounded-sm w-fit">
+            {[
+              { id: 'products', label: 'Produtos', icon: <Package size={14} /> },
+              { id: 'orders',   label: 'Pedidos',  icon: <ShoppingBag size={14} /> },
+              { id: 'coupons',  label: 'Cupons',   icon: <Tag size={14} /> },
+            ].map((t) => (
+              <button
+                key={t.id}
+                onClick={() => setTab(t.id as 'products' | 'orders' | 'coupons')}
+                className={`flex items-center gap-2 px-6 py-2 text-[11px] font-mono tracking-widest uppercase transition-all rounded-sm ${
+                  activeTab === t.id 
+                    ? 'bg-orange-500 text-black' 
+                    : 'text-black/40 dark:text-white/30 hover:text-black dark:hover:text-white'
+                }`}
+              >
+                {t.icon} {t.label}
               </button>
-            );
-          })}
+            ))}
+          </div>
         </div>
 
-        {/* Products Tab */}
+        {/* Tab Content */}
         <AnimatePresence mode="wait">
           {activeTab === 'products' && (
-            <motion.div key="products" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
+            <motion.div key="products" initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }}>
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-3xl font-display tracking-[0.08em] text-black/80 dark:text-white/80">
                   GESTÃO DE <span className="text-transparent bg-clip-text bg-gradient-to-br from-[#FF0000] to-[#FFA500]">PRODUTOS</span>
                 </h2>
                 <div className="flex gap-3">
-                  <motion.button onClick={resetToDefault} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
+                  <motion.button onClick={refreshData} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
                                  className="flex items-center gap-2 px-4 py-2 text-xs text-black/40 dark:text-white/40 border border-black/10 dark:border-white/10 hover:text-black dark:hover:text-white hover:border-black/20 dark:hover:border-white/20 transition-all font-mono rounded-sm">
                     <RefreshCw size={11} />
-                    Resetar
+                    Recarregar
                   </motion.button>
                   <motion.button onClick={openNew} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
                                  className="flex items-center gap-2 px-4 py-2 text-sm font-bold text-black font-body tracking-[0.1em] rounded-sm"
@@ -313,38 +261,25 @@ function Dashboard() {
                   </motion.button>
                 </div>
               </div>
-
-              <div className="overflow-x-auto border border-black/10 dark:border-white/5 rounded-md">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b border-black/5 dark:border-white/[0.06] bg-black/5 dark:bg-white/[0.02]">
-                      {['Foto', 'Produto', 'Preço', 'Estoque', 'Tamanhos', 'Tag', 'Ações'].map((h) => (
-                        <th key={h} className="px-4 py-3 text-left text-[10px] tracking-[0.2em] uppercase text-black/40 dark:text-white/30 font-mono">
-                          {h}
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <AnimatePresence>
-                      {products.map((p) => (
-                        <ProductRow key={p.id} product={p}
-                                    onEdit={() => openEdit(p)}
-                                    onDelete={() => removeProduct(p.id)} />
-                      ))}
-                    </AnimatePresence>
-                  </tbody>
-                </table>
-              </div>
+              <ProductsTable />
             </motion.div>
           )}
 
           {activeTab === 'orders' && (
-            <motion.div key="orders" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
+            <motion.div key="orders" initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -10 }}>
               <h2 className="text-3xl mb-6 font-display tracking-[0.08em] text-black/80 dark:text-white/80">
                 GESTÃO DE <span className="text-transparent bg-clip-text bg-gradient-to-br from-[#FF0000] to-[#FFA500]">PEDIDOS</span>
               </h2>
               <OrdersTable />
+            </motion.div>
+          )}
+
+          {activeTab === 'coupons' && (
+            <motion.div key="coupons" initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -10 }}>
+              <h2 className="text-3xl mb-6 font-display tracking-[0.08em] text-black/80 dark:text-white/80">
+                GESTÃO DE <span className="text-transparent bg-clip-text bg-gradient-to-br from-[#FF0000] to-[#FFA500]">CUPONS</span>
+              </h2>
+              <CouponsTable />
             </motion.div>
           )}
         </AnimatePresence>
@@ -360,12 +295,17 @@ function Dashboard() {
 
 /* ── Page export ────────────────────────────────────────── */
 export default function AdminPage() {
-  const { isAuthenticated } = useAdmin();
+  const { isAuthenticated, checkAuth } = useAdmin();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
-  }, []);
+    checkAuth();
+    
+    // Auto-check every 30 seconds for session timeout
+    const interval = setInterval(() => checkAuth(), 30000);
+    return () => clearInterval(interval);
+  }, [checkAuth]);
 
   if (!mounted) return <div className="min-h-screen bg-white dark:bg-black" />;
 

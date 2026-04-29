@@ -11,14 +11,25 @@ const spaceMono = Space_Mono({ weight: ['400', '700'], subsets: ['latin'], varia
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://bonds-agence.vercel.app'),
-  title: 'BONDS AGENCE – Sportlife & Streetwear Premium',
-  description:
-    'Vista-se como um mito. Conjuntos, corta-ventos, kits refletivos e acessórios de luxo urbano.',
-  keywords: ['streetwear', 'sportlife', 'corta-vento', 'conjuntos', 'bonds', 'agence'],
+  title: 'Bonds Agence | Streetwear e Sportlife em Indaiatuba',
+  description: 'Loja de roupas streetwear e sportlife em Indaiatuba. Estilo, atitude e peças exclusivas na Bonds Agence. Compre online ou visite a loja.',
+  keywords: ["streetwear", "sportlife", "roupas", "Indaiatuba", "moda urbana", "Bonds Agence"],
+  robots: {
+    index: true,
+    follow: true,
+  },
   openGraph: {
-    title: 'BONDS AGENCE',
-    description: 'Vista-se como um mito.',
+    title: 'Bonds Agence | Streetwear e Sportlife em Indaiatuba',
+    description: 'Loja de roupas streetwear e sportlife em Indaiatuba. Estilo, atitude e peças exclusivas na Bonds Agence. Compre online ou visite a loja.',
+    url: 'https://bonds-agence.vercel.app',
+    siteName: 'Bonds Agence',
     type: 'website',
+    locale: 'pt_BR',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Bonds Agence | Streetwear e Sportlife em Indaiatuba',
+    description: 'Loja de roupas streetwear e sportlife em Indaiatuba. Estilo, atitude e peças exclusivas na Bonds Agence.',
   },
 };
 

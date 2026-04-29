@@ -93,10 +93,13 @@ function SuccessContent() {
 
   useEffect(() => {
     setMounted(true);
+    if (orderId) {
+      sessionStorage.setItem(`order_verified_${orderId}`, 'true');
+    }
     const t1 = setTimeout(() => setBurst(true), 300);
     const t2 = setTimeout(() => setShowDetails(true), 1200);
     return () => { clearTimeout(t1); clearTimeout(t2); };
-  }, []);
+  }, [orderId]);
 
   return (
     <div className="min-h-screen bg-white dark:bg-black flex flex-col items-center justify-center px-4 relative overflow-hidden">
@@ -190,9 +193,10 @@ function SuccessContent() {
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.25 }}
               className="text-black/60 dark:text-white/40 leading-relaxed font-body font-light text-[1rem]"
             >
-              Seu kit está sendo separado pelos nossos operadores de fogo.
+              Seu pedido foi registrado com sucesso! <br/>
+              <span className="text-fire-orange font-bold">Aguardando confirmação do PIX.</span>
               <br />
-              Em instantes você recebe a confirmação no e-mail.
+              <span className="text-[11px] opacity-70">A validação manual pode levar até 24h úteis.</span>
             </motion.p>
 
             {/* Steps */}
@@ -201,9 +205,9 @@ function SuccessContent() {
               className="grid grid-cols-3 gap-3 mt-6"
             >
               {[
-                { icon: <CheckCircle size={20} />, label: 'Pedido Recebido',   sub: 'Agora' },
-                { icon: '🏭', label: 'Separando Kit',     sub: '1–2 dias' },
-                { icon: '🚀', label: 'A Caminho',         sub: 'Em breve' },
+                { icon: <CheckCircle size={20} />, label: 'Aguardando PIX',   sub: 'Agora' },
+                { icon: '🏭', label: 'Validação Manual',     sub: 'até 24h' },
+                { icon: '🚀', label: 'Kit Enviado',         sub: 'Em breve' },
               ].map((step, i) => (
                 <motion.div
                   key={step.label}
