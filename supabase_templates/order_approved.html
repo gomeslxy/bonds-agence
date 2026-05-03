@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pagamento Aprovado - Bonds Agence</title>
+    <style>
+        body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; background-color: #000; color: #fff; margin: 0; padding: 0; }
+        .container { max-width: 600px; margin: 40px auto; background-color: #111; border: 1px solid #333; border-radius: 8px; overflow: hidden; }
+        .header { background: linear-gradient(135deg, #00FF00, #008000); padding: 40px; text-align: center; } /* Verde para aprovação */
+        .header h1 { margin: 0; font-size: 24px; letter-spacing: 4px; text-transform: uppercase; color: #000; }
+        .content { padding: 40px; }
+        .content h2 { color: #00FF00; font-size: 22px; margin-bottom: 20px; text-transform: uppercase; letter-spacing: 2px; text-align: center; }
+        .order-info { background: #000; padding: 20px; border-radius: 8px; border: 1px solid #222; margin: 20px 0; }
+        .status-badge { display: inline-block; padding: 5px 15px; background: rgba(0,255,0,0.1); border: 1px solid #00FF00; color: #00FF00; font-size: 10px; font-weight: bold; border-radius: 4px; text-transform: uppercase; margin-bottom: 15px; }
+        .btn { display: block; width: 200px; margin: 30px auto; padding: 15px 0; background-color: #00FF00; color: #000; text-decoration: none; border-radius: 4px; font-weight: bold; text-transform: uppercase; text-align: center; }
+        .footer { padding: 20px; text-align: center; border-top: 1px solid #222; font-size: 12px; color: #555; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Bonds Agence</h1>
+        </div>
+        <div class="content">
+            <h2>Pagamento Aprovado!</h2>
+            <p>Olá, {{ customer_name }}!</p>
+            <p>Ótimas notícias! O pagamento do seu pedido foi confirmado. Agora nossa equipe está preparando seu pacote com todo o estilo para o envio.</p>
+            
+            <div class="order-info">
+                <div class="status-badge">PAGAMENTO APROVADO</div>
+                <p style="font-size: 12px; color: #555; margin: 0;">PEDIDO #{{ order_id }}</p>
+                <p style="color: #888; font-size: 14px; margin-top: 10px;">Você receberá um novo e-mail assim que o produto for postado com o código de rastreamento.</p>
+            </div>
+            
+            <a href="{{ site_url }}/order/{{ order_id }}" class="btn">Acompanhar Pedido</a>
+        </div>
+        <div class="footer">
+            &copy; 2026 Bonds Agence. Streetwear e Sportlife em Indaiatuba.
+        </div>
+    </div>
+</body>
+</html>
